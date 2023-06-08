@@ -32,6 +32,6 @@ jobs:
           SWITCHBOT_AIR_CONDITIONER_DEVICE_ID: ${{ secrets.SWITCHBOT_AIR_CONDITIONER_DEVICE_ID }}
           SWITCHBOT_AIR_CONDITIONER_SUPPORT_DEVICE_ID: ${{ secrets.SWITCHBOT_AIR_CONDITIONER_SUPPORT_DEVICE_ID }}
           SUPABASE_PROJECT_URL: ${{ secrets.SUPABASE_PROJECT_URL }}
-          SUPABASE_API_KEY: ${{ secrets.API_TOKEN }}
+          SUPABASE_API_KEY: ${{ secrets.SUPABASE_API_KEY }}
         run: |
           python src/home_climate_control.py
