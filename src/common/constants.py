@@ -1,0 +1,2 @@
+POWERFUL_COOLING = "パワフル冷房"
+POWERFUL_HEATING = "パワフル暖房"
