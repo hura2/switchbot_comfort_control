@@ -117,19 +117,19 @@ def power_on_off():
     post_command(CIRCULATOR_DEVICE_ID, "電源", "default", "customize")
 
 
-def aircon(command: str):
+def aircon(temp_setting: str, mode_setting: str, fan_speed_setting: str,  power_setting: str):
     """
     エアコンの操作を行う関数
     """
-    if command == constants.POWERFUL_COOLING:
+    if mode_setting == constants.POWERFUL_COOLING:
         post_command(AIR_CONDITIONER_SUPPORT_DEVICE_ID,
                      constants.POWERFUL_COOLING, "default", "customize")
         return
-    if command == constants.POWERFUL_HEATING:
+    if mode_setting == constants.POWERFUL_HEATING:
         post_command(AIR_CONDITIONER_SUPPORT_DEVICE_ID,
                      constants.POWERFUL_HEATING, "default", "customize")
         return
-    post_command(AIR_CONDITIONER_DEVICE_ID, "setAll", command, "command")
+    post_command(AIR_CONDITIONER_DEVICE_ID, "setAll", f"{temp_setting},{mode_setting},{fan_speed_setting},{power_setting}", "command")
 
 
 def get_ceiling_temperature():

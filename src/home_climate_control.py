@@ -1,5 +1,6 @@
 # 必要なライブラリをインポートします
 import common.constants as constants
+import common.data_types as data_types
 from common.logger import logger
 import os
 import datetime
@@ -19,29 +20,30 @@ PROJECT_URL = os.environ["SUPABASE_PROJECT_URL"]
 API_KEY = os.environ["SUPABASE_API_KEY"]
 
 # 風量を設定する関数
-
-
-def set_air_volume(
-    air_volume: int,
+def set_fan_speeed(
+    current_power: str,
+    current_fan_speed: str,
+    fan_speed: int,
 ):
     # 現在の電源状態と風量を取得
-    supabase: Client = create_client(PROJECT_URL, API_KEY)
-    power, current_air_valume = analytics.get_circulator_setting(supabase)
+    # supabase: Client = create_client(PROJECT_URL, API_KEY)
+    # current_power, current_air_speed = analytics.get_latest_circulator_setting(supabase)
 
     # ログ出力
-    logger.info(f"現在のサーキュレーターの電源:{power}")
-    logger.info(f"現在のサーキュレーターの風量:{current_air_valume}")
-    logger.info(f"サーキュレーターの風量を{air_volume}に設定")
+    logger.info(f"現在のサーキュレーターの電源:{current_power}")
+    logger.info(f"現在のサーキュレーターの風量:{current_fan_speed}")
+    logger.info(f"サーキュレーターの風量を{fan_speed}に設定")
 
     # 現在の風量を数値化
-    i = int(current_air_valume)
+    i = int(current_fan_speed)
+    power = current_power
 
     # 風量が0の場合
-    if air_volume == 0:
+    if fan_speed == 0:
         # 電源がオンの場合
-        if power == "on":
+        if current_power == "on":
             # 現在の風量が指定の風量と一致するまで風量を減少させる
-            while air_volume != i:
+            while fan_speed != i:
                 switchbot_api.decrease_air_volume()
                 i = i - 1
 
@@ -51,15 +53,15 @@ def set_air_volume(
             power = "off"
     else:
         # 電源がオフの場合
-        if power == "off":
+        if current_power == "off":
             # 電源をオンにする
             switchbot_api.power_on_off()
             # 環境変数を更新
             power = "on"
 
         # 現在の風量が指定の風量と一致するまで風量を調整する
-        while air_volume != i:
-            if air_volume > i:
+        while fan_speed != i:
+            if fan_speed > i:
                 # 指定の風量が現在より大きい場合、風量を増加させる
                 switchbot_api.increase_air_volume()
                 i = i + 1
@@ -69,68 +71,89 @@ def set_air_volume(
                 i = i - 1
 
     # 環境変数を更新
-    analytics.update_circulator(supabase, power, air_volume)
+    # analytics.update_circulator(supabase, power, air_speed)
+    return power, fan_speed
 
 
 # エアコンの動作を設定する関数
 def set_aircon(
     pmv: int,
 ):
+    # Define aircon settings
+    setting = data_types.AirconSetting("","","","")
+
     if pmv <= -3:
         # pmvが-3以下の場合の処理
-        logger.info(f"強暖房1")
-        switchbot_api.aircon(constants.POWERFUL_HEATING)
+        setting.mode_setting = constants.POWERFUL_HEATING
     elif pmv <= -2.5:
         # pmvが-2.5以下の場合の処理
-        logger.info(f"強暖房2")
-        switchbot_api.aircon(constants.POWERFUL_HEATING)
+        setting.mode_setting = constants.POWERFUL_HEATING
     elif pmv <= -2:
         # pmvが-2以下の場合の処理
-        logger.info(f"暖房1")
-        switchbot_api.aircon("25,5,4,on")
+        setting.temp_setting = "25"
+        setting.mode_setting = constants.AIRCON_MODE_HEATING
+        setting.fan_speed_setting = constants.AIRCON_FAN_SPEED_HIGH
+        setting.power_setting = constants.AIRCON_ON
     elif pmv <= -1.5:
         # pmvが-1.5以下の場合の処理
-        logger.info(f"暖房2")
-        switchbot_api.aircon("25,5,3,on")
+        setting.temp_setting = "25"
+        setting.mode_setting = constants.AIRCON_MODE_HEATING
+        setting.fan_speed_setting = constants.AIRCON_FAN_SPEED_MEDIUM
+        setting.power_setting = constants.AIRCON_ON
     elif pmv <= -1:
         # pmvが-1以下の場合の処理
-        logger.info(f"暖房3")
-        switchbot_api.aircon("25,5,2,on")
+        setting.temp_setting = "25"
+        setting.mode_setting = constants.AIRCON_MODE_HEATING
+        setting.fan_speed_setting = constants.AIRCON_FAN_SPEED_LOW
+        setting.power_setting = constants.AIRCON_ON
     elif pmv <= -0.5:
         # pmvが-0.5以下の場合の処理
-        logger.info(f"送風1")
-        switchbot_api.aircon("25,4,2,on")
+        setting.temp_setting = "25"
+        setting.mode_setting = constants.AIRCON_MODE_FAN
+        setting.fan_speed_setting = constants.AIRCON_FAN_SPEED_LOW
+        setting.power_setting = constants.AIRCON_ON
     elif pmv <= 0:
         # pmvが0以下の場合の処理
-        logger.info(f"送風2")
-        switchbot_api.aircon("25,4,2,on")
+        setting.temp_setting = "25"
+        setting.mode_setting = constants.AIRCON_MODE_FAN
+        setting.fan_speed_setting = constants.AIRCON_FAN_SPEED_LOW
+        setting.power_setting = constants.AIRCON_ON
     elif pmv <= 0.5:
         # pmvが0.5以下の場合の処理
-        logger.info(f"送風3")
-        switchbot_api.aircon("25,4,2,on")
+        setting.temp_setting = "25"
+        setting.mode_setting = constants.AIRCON_MODE_FAN
+        setting.fan_speed_setting = constants.AIRCON_FAN_SPEED_LOW
+        setting.power_setting = constants.AIRCON_ON
     elif pmv <= 1:
         # pmvが1以下の場合の処理
-        logger.info(f"冷房1")
-        switchbot_api.aircon("26,2,2,on")
+        setting.temp_setting = "26"
+        setting.mode_setting = constants.AIRCON_MODE_COOLING
+        setting.fan_speed_setting = constants.AIRCON_FAN_SPEED_LOW
+        setting.power_setting = constants.AIRCON_ON
     elif pmv <= 1.5:
         # pmvが1.5以下の場合の処理
-        logger.info(f"冷房2")
-        switchbot_api.aircon("26,2,3,on")
+        setting.temp_setting = "26"
+        setting.mode_setting = constants.AIRCON_MODE_COOLING
+        setting.fan_speed_setting = constants.AIRCON_FAN_SPEED_MEDIUM
+        setting.power_setting = constants.AIRCON_ON
     elif pmv <= 2:
         # pmvが2以下の場合の処理
-        logger.info(f"冷房3")
-        switchbot_api.aircon("26,2,4,on")
+        setting.temp_setting = "26"
+        setting.mode_setting = constants.AIRCON_MODE_COOLING
+        setting.fan_speed_setting = constants.AIRCON_FAN_SPEED_HIGH
+        setting.power_setting = constants.AIRCON_ON
     elif pmv <= 2.5:
         # pmvが2.5以下の場合の処理
-        logger.info(f"パワフル冷房1")
-        switchbot_api.aircon(constants.POWERFUL_COOLING)
+        setting.mode_setting = constants.POWERFUL_COOLING
     else:
         # pmvが3以上の場合の処理
-        logger.info(f"パワフル冷房2")
-        switchbot_api.aircon(constants.POWERFUL_COOLING)
+        setting.mode_setting = constants.POWERFUL_COOLING
 
+    switchbot_api.aircon(setting.temp_setting, setting.mode_setting, setting.fan_speed_setting, setting.power_setting)
 
-def set_air_volume_based_on_temperature_diff(temperature_diff: float):
+    return setting
+
+def set_fan_speed_based_on_temperature_diff(temperature_diff: float, current_power: str, current_fan_speed: str):
     """温度差に基づいて風量を設定する
 
     温度差が特定の閾値を超える場合、対応する風量に設定する。
@@ -142,11 +165,11 @@ def set_air_volume_based_on_temperature_diff(temperature_diff: float):
     - 温度差が1.0以上：風量1
     それ以下の場合は風量を0に設定する。
     """
-    for threshold, volume in [(3.0, 4), (2.5, 4), (2.0, 3), (1.5, 2), (1.0, 1)]:
+    for threshold, speed in [(3.0, 4), (2.5, 4), (2.0, 3), (1.5, 2), (1.0, 1)]:
         if temperature_diff >= threshold:
-            set_air_volume(volume)
-            return
-    set_air_volume(0)
+            return set_fan_speeed(current_power, current_fan_speed, speed)
+        
+    return set_fan_speeed(current_power, current_fan_speed, 0)
 
 
 def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
@@ -208,11 +231,23 @@ def main():
         ceiling_temperature, ceiling_humidity, floor_temperature, floor_humidity, outdoor_temperature, met, icl)
 
     # エアコンの設定
-    set_aircon(result.pmv)
+    aircon_setting = set_aircon(result.pmv)
+
+
+    # 操作時間外なら風量を0に設定して終了
+    if bedtime:
+        logger.info(f"操作時間外")
+        set_fan_speeed(0)
+        return True
+
+    supabase: Client = create_client(PROJECT_URL, API_KEY)
+
+    # 温度差に基づいてサーキュレーターを設定
+    current_power, current_fan_speed = analytics.get_latest_circulator_setting(supabase)
+    power, fan_speed = set_fan_speed_based_on_temperature_diff(temperature_diff, current_power, current_fan_speed)
+
 
     # 観測結果を保存
-    supabase: Client = create_client(PROJECT_URL, API_KEY)
-    # データを挿入
     analytics.insert_temperature(supabase, 1, floor_temperature, now)
     analytics.insert_temperature(supabase, 2, ceiling_temperature, now)
     analytics.insert_temperature(supabase, 3, outdoor_temperature, now)
@@ -221,16 +256,8 @@ def main():
     analytics.insert_humidity(supabase, 3, outdoor_humidity, now)
     analytics.insert_surface_temperature(supabase, result.wall, result.ceiling, result.floor, now)
     analytics.insert_pmv(supabase, result.pmv, result.met, result.clo, result.air, now)
-
-    # 操作時間外なら風量を0に設定して終了
-    if bedtime:
-        logger.info(f"操作時間外")
-        set_air_volume(0)
-        return True
-
-    # 温度差に基づいてサーキュレーターを設定
-    set_air_volume_based_on_temperature_diff(temperature_diff)
-
+    analytics.insert_aircon_setting(supabase, aircon_setting.temp_setting, aircon_setting.mode_setting, aircon_setting.fan_speed_setting, aircon_setting.power_setting, now)
+    analytics.insert_circulator_setting(supabase, fan_speed, power, now)
     return True
 
 

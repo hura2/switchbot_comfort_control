@@ -25,10 +25,22 @@ def insert_pmv(client: Client, pmv, met, clo, air, created_at):
     result = client.from_("pmvs").insert([{"pmv": pmv, "met": met, "clo": clo, "air": air, "created_at": created_at.isoformat()}]).execute()
     return result
 
-def get_circulator_setting(client: Client):
-    data = client.table("circulator").select("power, wind").eq("id", 1).execute()
-    return data.data[0]["power"], data.data[0]["wind"]
+# def get_circulator_setting(client: Client):
+#     data = client.table("circulator").select("power, wind").eq("id", 1).execute()
+#     return data.data[0]["power"], data.data[0]["wind"]
 
-def update_circulator(client: Client, power, wind):
-    data = client.table("circulator").update({"power": power, "wind": wind}).eq("id", 1).execute()
-    return data
+# def update_circulator(client: Client, power, wind):
+#     data = client.table("circulator").update({"power": power, "wind": wind}).eq("id", 1).execute()
+#     return data
+
+def insert_aircon_setting(client: Client, temperature, mode, fan_speed, power, created_at):
+    result = client.from_("aircon_settings").insert([{"temperature": temperature, "mode": mode, "fan_speed": fan_speed, "power": power, "created_at": created_at.isoformat()}]).execute()
+    return result
+
+def insert_circulator_setting(client: Client, fan_speed, power, created_at):
+    result = client.from_("circulator_settings").insert([{"fan_speed": fan_speed, "power": power, "created_at": created_at.isoformat()}]).execute()
+    return result
+
+def get_latest_circulator_setting(client: Client):
+    data = client.table("circulator_settings").select("power, fan_speed").eq("id", 1).order("created_at",desc=True).limit(1).execute()
+    return data.data[0]["power"], data.data[0]["fan_speed"]
