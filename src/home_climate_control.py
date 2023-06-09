@@ -241,17 +241,17 @@ def main():
     aircon_setting = set_aircon(result.pmv)
     logger.info(aircon_setting)
 
+    supabase: Client = create_client(PROJECT_URL, API_KEY)
+
+    current_power, current_fan_speed = analytics.get_latest_circulator_setting(supabase)
     # 操作時間外なら風量を0に設定して終了
     if bedtime:
         logger.info(f"操作時間外")
-        set_fan_speeed(0)
+        set_fan_speeed(current_power, current_fan_speed, 0)
         return True
-
-    supabase: Client = create_client(PROJECT_URL, API_KEY)
-
-    # 温度差に基づいてサーキュレーターを設定
-    current_power, current_fan_speed = analytics.get_latest_circulator_setting(supabase)
-    power, fan_speed = set_fan_speed_based_on_temperature_diff(temperature_diff, current_power, current_fan_speed)
+    else:
+        # 温度差に基づいてサーキュレーターを設定
+        power, fan_speed = set_fan_speed_based_on_temperature_diff(temperature_diff, current_power, current_fan_speed)
 
 
     # 観測結果を保存
