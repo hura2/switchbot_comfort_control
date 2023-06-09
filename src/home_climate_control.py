@@ -181,15 +181,10 @@ def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
     - 外部温度が10以上：寝る時間ならMET=1.0, ICL=1.0、それ以外ならMET=1.1, ICL=0.8
     - それ以下：寝る時間ならMET=1.0, ICL=2.0、それ以外ならMET=1.0, ICL=1.0
     """
+    now = datetime.datetime.now(pytz.timezone('Asia/Tokyo'))
     if outdoor_temperature >= 20:
         met = 1.0 if bedtime else 1.1
         icl = 0.8 if bedtime else 0.6
-        now = datetime.datetime.now(pytz.timezone('Asia/Tokyo'))
-        start_time = datetime.time(11, 0)
-        end_time = datetime.time(17, 0)
-
-        if start_time <= now.time() <= end_time:
-            met = 1.35
 
     elif outdoor_temperature >= 10:
         met = 1.0 if bedtime else 1.1
@@ -197,6 +192,11 @@ def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
     else:
         met = 1.0 if bedtime else 1.0
         icl = 2.0 if bedtime else 1.0
+
+    #たくさん活動する時間帯はmetを増やす
+    if datetime.time(11, 0) <= now.time() <= datetime.time(17, 0):
+        met += 0.25
+
 
     return met, icl
 
@@ -235,11 +235,11 @@ def main():
 
     # PMV値を計算
     result = heat_comfort_calculator.calculate_pmv(
-        ceiling_temperature, ceiling_humidity, floor_temperature, floor_humidity, outdoor_temperature, met, icl)
+        ceiling_temperature, ceiling_humidity, floor_temperature, floor_humidity, outdoor_temperature, met, icl, now)
 
     # エアコンの設定
     aircon_setting = set_aircon(result.pmv)
-
+    logger.info(aircon_setting)
 
     # 操作時間外なら風量を0に設定して終了
     if bedtime:
