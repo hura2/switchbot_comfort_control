@@ -150,8 +150,8 @@ def set_aircon(
         # pmvが3以上の場合の処理
         setting.mode_setting = constants.POWERFUL_COOLING
 
-    if setting.mode_setting == constants.AIRCON_MODE_FAN
-        if humidity > 60
+    if setting.mode_setting == constants.AIRCON_MODE_FAN:
+        if humidity > 60:
             setting.temp_setting = "26"
             setting.mode_setting = constants.AIRCON_MODE_COOLING
             setting.fan_speed_setting = constants.AIRCON_FAN_SPEED_LOW
