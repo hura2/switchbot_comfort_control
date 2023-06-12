@@ -253,13 +253,24 @@ def main():
     result = heat_comfort_calculator.calculate_pmv(
         ceiling_temperature, ceiling_humidity, floor_temperature, floor_humidity, outdoor_temperature, met, icl, now)
 
-    # エアコンの設定
-    aircon_setting = set_aircon(result.pmv, outdoor_temperature, (ceiling_humidity + floor_humidity) / 2)
-    logger.info(aircon_setting)
-
     supabase: Client = create_client(PROJECT_URL, API_KEY)
 
     current_power, current_fan_speed = analytics.get_latest_circulator_setting(supabase)
+    cuttent_mode, last_setting_time = analytics.get_latest_aircon_setting(supabase)
+
+    # エアコンの設定
+    last_setting_time = datetime.datetime.strptime(last_setting_time, "%Y-%m-%dT%H:%M:%S.%f%z")
+    logger.info(last_setting_time) 
+
+    aircon_setting = None
+    if now - last_setting_time > datetime.timedelta(hours=1):
+        if cuttent_mode != constants.AIRCON_MODE_COOLING and cuttent_mode != constants.AIRCON_MODE_DRY:
+            aircon_setting = set_aircon(result.pmv, outdoor_temperature, (ceiling_humidity + floor_humidity) / 2, cuttent_mode, last_setting_time)
+            logger.info(aircon_setting)        
+
+    if aircon_setting is None:
+        logger.info(f"前回のモードを継続:{cuttent_mode}") 
+
     # 操作時間外なら風量を0に設定して終了
     if bedtime:
         logger.info(f"操作時間外")
@@ -279,7 +290,8 @@ def main():
     analytics.insert_humidity(supabase, 3, outdoor_humidity, now)
     analytics.insert_surface_temperature(supabase, result.wall, result.ceiling, result.floor, now)
     analytics.insert_pmv(supabase, result.pmv, result.met, result.clo, result.air, now)
-    analytics.insert_aircon_setting(supabase, aircon_setting.temp_setting, aircon_setting.mode_setting, aircon_setting.fan_speed_setting, aircon_setting.power_setting, now)
+    if aircon_setting is not None:
+        analytics.insert_aircon_setting(supabase, aircon_setting.temp_setting, aircon_setting.mode_setting, aircon_setting.fan_speed_setting, aircon_setting.power_setting, now)
     analytics.insert_circulator_setting(supabase, fan_speed, power, now)
     return True
 
