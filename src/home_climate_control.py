@@ -78,6 +78,7 @@ def set_fan_speeed(
 # エアコンの動作を設定する関数
 def set_aircon(
     pmv: int,
+    humidity: float
 ):
     # Define aircon settings
     setting = data_types.AirconSetting("","","","")
@@ -149,6 +150,13 @@ def set_aircon(
         # pmvが3以上の場合の処理
         setting.mode_setting = constants.POWERFUL_COOLING
 
+    if setting.mode_setting == constants.AIRCON_MODE_FAN:
+        if humidity > 60:
+            setting.temp_setting = "26"
+            setting.mode_setting = constants.AIRCON_MODE_COOLING
+            setting.fan_speed_setting = constants.AIRCON_FAN_SPEED_LOW
+            setting.power_setting = constants.AIRCON_ON
+        
     switchbot_api.aircon(setting.temp_setting, setting.mode_setting, setting.fan_speed_setting, setting.power_setting)
 
     return setting
@@ -238,7 +246,7 @@ def main():
         ceiling_temperature, ceiling_humidity, floor_temperature, floor_humidity, outdoor_temperature, met, icl, now)
 
     # エアコンの設定
-    aircon_setting = set_aircon(result.pmv)
+    aircon_setting = set_aircon(result.pmv, (ceiling_humidity + floor_humidity) / 2)
     logger.info(aircon_setting)
 
     supabase: Client = create_client(PROJECT_URL, API_KEY)
