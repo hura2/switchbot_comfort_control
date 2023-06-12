@@ -108,7 +108,7 @@ def set_aircon(
         setting.mode_setting = constants.AIRCON_MODE_HEATING
         setting.fan_speed_setting = constants.AIRCON_FAN_SPEED_LOW
         setting.power_setting = constants.AIRCON_ON
-    elif pmv <= -0.3:
+    elif pmv <= -0.5:
         # pmvが-0.5以下の場合の処理
         if outdoor_temperature >= 23:
             setting.temp_setting = "25"
