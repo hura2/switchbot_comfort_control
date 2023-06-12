@@ -160,8 +160,8 @@ def set_aircon(
 
     if setting.mode_setting == constants.AIRCON_MODE_FAN:
         if humidity > 60:
-            setting.temp_setting = "28"
-            setting.mode_setting = constants.AIRCON_MODE_COOLING
+            setting.temp_setting = "27"
+            setting.mode_setting = constants.AIRCON_MODE_DRY
             setting.fan_speed_setting = constants.AIRCON_FAN_SPEED_LOW
             setting.power_setting = constants.AIRCON_ON
         
