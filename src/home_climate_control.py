@@ -264,12 +264,14 @@ def main():
 
     aircon_setting = None
     if now - last_setting_time > datetime.timedelta(hours=1):
-        if cuttent_mode != constants.AIRCON_MODE_COOLING and cuttent_mode != constants.AIRCON_MODE_DRY:
-            aircon_setting = set_aircon(result.pmv, outdoor_temperature, (ceiling_humidity + floor_humidity) / 2, cuttent_mode, last_setting_time)
-            logger.info(aircon_setting)        
-
-    if aircon_setting is None:
-        logger.info(f"前回のモードを継続:{cuttent_mode}") 
+        aircon_setting = set_aircon(result.pmv, outdoor_temperature, (ceiling_humidity + floor_humidity) / 2)
+        logger.info(aircon_setting)
+    else:
+        if cuttent_mode == constants.AIRCON_MODE_COOLING or cuttent_mode == constants.AIRCON_MODE_DRY:
+            logger.info("現在のモードを継続します: " + cuttent_mode)
+        else:
+            aircon_setting = set_aircon(result.pmv, outdoor_temperature, (ceiling_humidity + floor_humidity) / 2)
+            logger.info(aircon_setting)
 
     # 操作時間外なら風量を0に設定して終了
     if bedtime:
