@@ -98,7 +98,7 @@ def increase_air_volume():
     風量を増加させる関数
     """
     # スイッチボットに風量を増加させるコマンドを送ります
-    post_command(CIRCULATOR_DEVICE_ID, "風力プラス", "default", "customize")
+    post_command(CIRCULATOR_DEVICE_ID, constants.CirculatorFanSpeed.UP, "default", "customize")
 
 
 def decrease_air_volume():
@@ -106,7 +106,7 @@ def decrease_air_volume():
     風量を減少させる関数
     """
     # スイッチボットに風量を減少させるコマンドを送ります
-    post_command(CIRCULATOR_DEVICE_ID, "風力マイナス", "default", "customize")
+    post_command(CIRCULATOR_DEVICE_ID, constants.CirculatorFanSpeed.DOWN, "default", "customize")
 
 
 def power_on_off():
@@ -114,22 +114,22 @@ def power_on_off():
     電源をオン/オフする関数
     """
     # スイッチボットに電源をオン/オフするコマンドを送ります
-    post_command(CIRCULATOR_DEVICE_ID, "電源", "default", "customize")
+    post_command(CIRCULATOR_DEVICE_ID, constants.CirculatorPower.ON.id, "default", "customize")
 
 
-def aircon(temp_setting: str, mode_setting: str, fan_speed_setting: str,  power_setting: str):
+def aircon(temp_setting: str, mode_setting: constants.AirconMode, fan_speed_setting: constants.AirconFanSpeed,  power_setting: constants.AirconPower):
     """
     エアコンの操作を行う関数
     """
-    if mode_setting == constants.POWERFUL_COOLING:
+    if mode_setting == constants.AirconMode.POWERFUL_COOLING:
         post_command(AIR_CONDITIONER_SUPPORT_DEVICE_ID,
-                     constants.POWERFUL_COOLING, "default", "customize")
+                     constants.AirconMode.POWERFUL_COOLING.description, "default", "customize")
         return
-    if mode_setting == constants.POWERFUL_HEATING:
+    if mode_setting == constants.AirconMode.POWERFUL_HEATING.id:
         post_command(AIR_CONDITIONER_SUPPORT_DEVICE_ID,
-                     constants.POWERFUL_HEATING, "default", "customize")
+                     constants.AirconMode.POWERFUL_COOLING.POWERFUL_HEATING, "default", "customize")
         return
-    post_command(AIR_CONDITIONER_DEVICE_ID, "setAll", f"{temp_setting},{mode_setting},{fan_speed_setting},{power_setting}", "command")
+    post_command(AIR_CONDITIONER_DEVICE_ID, "setAll", f"{temp_setting},{mode_setting.id},{fan_speed_setting.id},{power_setting.id}", "command")
 
 
 def get_ceiling_temperature():

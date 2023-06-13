@@ -1,4 +1,6 @@
 import dataclasses
+# 定数を管理するファイル
+import common.constants as constants
 
 @dataclasses.dataclass
 class PMVResult:
@@ -13,6 +15,6 @@ class PMVResult:
 @dataclasses.dataclass
 class AirconSetting:
     temp_setting: str
-    mode_setting: str
-    fan_speed_setting: str
-    power_setting: str
+    mode_setting: constants.AirconMode
+    fan_speed_setting: constants.AirconFanSpeed
+    power_setting: constants.AirconPower
