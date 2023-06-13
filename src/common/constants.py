@@ -61,3 +61,16 @@ class CirculatorPower(Enum):
     @classmethod
     def get_description(cls, id):
         return next((state.description for state in cls if state.id == id), None)
+
+class Location(Enum):
+    FLOOR = (1, "床")
+    CEILING = (2, "天井")
+    OUTDOOR = (3, "外")
+
+    def __init__(self, id, description):
+        self.id = id
+        self.description = description
+
+    @classmethod
+    def get_description(cls, id):
+        return next((location.description for location in cls if location.id == id), None)

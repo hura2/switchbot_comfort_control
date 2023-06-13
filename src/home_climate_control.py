@@ -19,60 +19,32 @@ load_dotenv(".env")
 PROJECT_URL = os.environ["SUPABASE_PROJECT_URL"]
 API_KEY = os.environ["SUPABASE_API_KEY"]
 
-# 風量を設定する関数
-def set_fan_speeed(
-    current_power: str,
-    current_fan_speed: str,
-    fan_speed: int,
-):
-    # 現在の電源状態と風量を取得
-    # supabase: Client = create_client(PROJECT_URL, API_KEY)
-    # current_power, current_air_speed = analytics.get_latest_circulator_setting(supabase)
 
-    # ログ出力
-    logger.info(f"現在のサーキュレーターの電源:{current_power}")
-    logger.info(f"現在のサーキュレーターの風量:{current_fan_speed}")
-    logger.info(f"サーキュレーターの風量を{fan_speed}に設定")
+def adjust_fan_speed(current_fan_speed, target_fan_speed):
+    adjusted_fan_speed = current_fan_speed
+    while adjusted_fan_speed != target_fan_speed:
+        if target_fan_speed > adjusted_fan_speed:
+            switchbot_api.increase_air_volume()
+            adjusted_fan_speed += 1
+        else:
+            switchbot_api.decrease_air_volume()
+            adjusted_fan_speed -= 1
+    return adjusted_fan_speed
 
-    # 現在の風量を数値化
-    i = int(current_fan_speed)
-    power = current_power
-
-    # 風量が0の場合
-    if fan_speed == 0:
-        # 電源がオンの場合
-        if current_power == constants.CirculatorPower.ON.description:
-            # 現在の風量が指定の風量と一致するまで風量を減少させる
-            while fan_speed != i:
-                switchbot_api.decrease_air_volume()
-                i = i - 1
-
-            # 電源をオフにする
+def set_circulator(current_power, current_fan_speed, target_fan_speed):
+    power = constants.CirculatorPower.ON
+    if target_fan_speed == 0:
+        if current_power == constants.CirculatorPower.ON:
+            adjust_fan_speed(switchbot_api, current_fan_speed, target_fan_speed)
             switchbot_api.power_on_off()
-            # 環境変数を更新
-            power = constants.CirculatorPower.OFF.description
+            power = constants.CirculatorPower.OFF
     else:
-        # 電源がオフの場合
-        if current_power == constants.CirculatorPower.OFF.description:
-            # 電源をオンにする
+        if current_power == constants.CirculatorPower.OFF:
             switchbot_api.power_on_off()
-            # 環境変数を更新
-            power = constants.CirculatorPower.ON.description
-
-        # 現在の風量が指定の風量と一致するまで風量を調整する
-        while fan_speed != i:
-            if fan_speed > i:
-                # 指定の風量が現在より大きい場合、風量を増加させる
-                switchbot_api.increase_air_volume()
-                i = i + 1
-            else:
-                # 指定の風量が現在より小さい場合、風量を減少させる
-                switchbot_api.decrease_air_volume()
-                i = i - 1
-
-    # 環境変数を更新
-    # analytics.update_circulator(supabase, power, air_speed)
-    return power, fan_speed
+            power = constants.CirculatorPower.ON
+        adjust_fan_speed(switchbot_api, current_fan_speed, target_fan_speed)
+    
+    return power.description
 
 
 # エアコンの動作を設定する関数
@@ -183,9 +155,9 @@ def set_fan_speed_based_on_temperature_diff(temperature_diff: float, current_pow
     """
     for threshold, speed in [(3.0, 4), (2.5, 4), (2.0, 3), (1.5, 2), (1.0, 1)]:
         if temperature_diff >= threshold:
-            return set_fan_speeed(current_power, current_fan_speed, speed)
+            return set_circulator(current_power, current_fan_speed, speed), speed
         
-    return set_fan_speeed(current_power, current_fan_speed, 0)
+    return set_circulator(current_power, current_fan_speed, 0), 0
 
 
 def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
@@ -234,6 +206,8 @@ def main():
         'Asia/Tokyo').localize(datetime.datetime(now.year, now.month, now.day, 6, 0, 0, 0))
     off_time = pytz.timezone(
         'Asia/Tokyo').localize(datetime.datetime(now.year, now.month, now.day, 23, 50, 0, 0))
+    # 寝る時間かどうかを判断（起動時間内ならばFalse,それ以外はTrue）
+    bedtime = True if on_time > now or off_time < now else False
 
     # ログに各種情報を出力
     logger.info(f"現在時刻:{now}")
@@ -242,9 +216,6 @@ def main():
     logger.info(f"天井:温度{ceiling_temperature}°, 湿度{ceiling_humidity}%")
     logger.info(f"床:温度{floor_temperature}°, 湿度{floor_humidity}%")
     logger.info(f"外部:温度{outdoor_temperature}°, 湿度{outdoor_humidity}%")
-
-    # 寝る時間かどうかを判断（起動時間内ならばFalse,それ以外はTrue）
-    bedtime = True if on_time > now or off_time < now else False
 
     # METとICLの値を計算
     met, icl = calculate_met_icl(outdoor_temperature, bedtime)
@@ -255,12 +226,13 @@ def main():
 
     supabase: Client = create_client(PROJECT_URL, API_KEY)
 
+    #前回の設定値を取得
     current_power, current_fan_speed = analytics.get_latest_circulator_setting(supabase)
     cuttent_mode, last_setting_time = analytics.get_latest_aircon_setting(supabase)
 
     # エアコンの設定
     last_setting_time = datetime.datetime.strptime(last_setting_time, "%Y-%m-%dT%H:%M:%S.%f%z")
-    logger.info(last_setting_time) 
+    logger.info(f"前回のエアコン設定時刻:{last_setting_time}")
 
     aircon_setting = None
     if now - last_setting_time > datetime.timedelta(hours=1):
@@ -274,22 +246,27 @@ def main():
         logger.info(f"{aircon_setting.mode_setting.description}:{aircon_setting.fan_speed_setting.description}:{aircon_setting.power_setting.description}")
 
     # 操作時間外なら風量を0に設定して終了
+    power, fan_speed = None, None
     if bedtime:
         logger.info(f"操作時間外")
-        set_fan_speeed(current_power, current_fan_speed, 0)
+        power, fan_speed = set_circulator(current_power, current_fan_speed, 0)
         return True
     else:
         # 温度差に基づいてサーキュレーターを設定
         power, fan_speed = set_fan_speed_based_on_temperature_diff(temperature_diff, current_power, current_fan_speed)
 
+    # ログ出力
+    logger.info(f"現在のサーキュレーターの電源:{current_power}")
+    logger.info(f"現在のサーキュレーターの風量:{current_fan_speed}")
+    logger.info(f"サーキュレーターの風量を{fan_speed}に設定")
 
     # 観測結果を保存
-    analytics.insert_temperature(supabase, 1, floor_temperature, now)
-    analytics.insert_temperature(supabase, 2, ceiling_temperature, now)
-    analytics.insert_temperature(supabase, 3, outdoor_temperature, now)
-    analytics.insert_humidity(supabase, 1, floor_humidity, now)
-    analytics.insert_humidity(supabase, 2, ceiling_humidity, now)
-    analytics.insert_humidity(supabase, 3, outdoor_humidity, now)
+    analytics.insert_temperature(supabase, constants.Location.FLOOR.id, floor_temperature, now)
+    analytics.insert_temperature(supabase, constants.Location.CEILING.id, ceiling_temperature, now)
+    analytics.insert_temperature(supabase, constants.Location.OUTDOOR.id, outdoor_temperature, now)
+    analytics.insert_humidity(supabase, constants.Location.FLOOR.id, floor_humidity, now)
+    analytics.insert_humidity(supabase, constants.Location.CEILING.id, ceiling_humidity, now)
+    analytics.insert_humidity(supabase, constants.Location.OUTDOOR.id, outdoor_humidity, now)
     analytics.insert_surface_temperature(supabase, result.wall, result.ceiling, result.floor, now)
     analytics.insert_pmv(supabase, result.pmv, result.met, result.clo, result.air, now)
     if aircon_setting is not None:
