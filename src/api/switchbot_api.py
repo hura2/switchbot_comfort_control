@@ -84,6 +84,7 @@ def post_command(device_id: str, command: str, parameter: str = "default", comma
     data = json.dumps(body)
     try:
         time.sleep(0.5)
+        logger.debug(data)
         r = requests.post(url, data=data, headers=generate_swt_header())
     except requests.exceptions.RequestException as e:
         # エラーログを出力します
@@ -98,7 +99,7 @@ def increase_air_volume():
     風量を増加させる関数
     """
     # スイッチボットに風量を増加させるコマンドを送ります
-    post_command(CIRCULATOR_DEVICE_ID, constants.CirculatorFanSpeed.UP, "default", "customize")
+    post_command(CIRCULATOR_DEVICE_ID, constants.CirculatorFanSpeed.UP.value, "default", "customize")
 
 
 def decrease_air_volume():
@@ -106,7 +107,7 @@ def decrease_air_volume():
     風量を減少させる関数
     """
     # スイッチボットに風量を減少させるコマンドを送ります
-    post_command(CIRCULATOR_DEVICE_ID, constants.CirculatorFanSpeed.DOWN, "default", "customize")
+    post_command(CIRCULATOR_DEVICE_ID, constants.CirculatorFanSpeed.DOWN.value, "default", "customize")
 
 
 def power_on_off():

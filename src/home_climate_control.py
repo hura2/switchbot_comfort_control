@@ -32,19 +32,19 @@ def adjust_fan_speed(current_fan_speed, target_fan_speed):
     return adjusted_fan_speed
 
 def set_circulator(current_power, current_fan_speed, target_fan_speed):
-    power = constants.CirculatorPower.ON
+    power = constants.CirculatorPower.ON.description
     if target_fan_speed == 0:
-        if current_power == constants.CirculatorPower.ON:
-            adjust_fan_speed(switchbot_api, current_fan_speed, target_fan_speed)
+        if current_power == constants.CirculatorPower.ON.description:
+            adjust_fan_speed(current_fan_speed, target_fan_speed)
             switchbot_api.power_on_off()
-            power = constants.CirculatorPower.OFF
+            power = constants.CirculatorPower.OFF.description
     else:
-        if current_power == constants.CirculatorPower.OFF:
+        if current_power == constants.CirculatorPower.OFF.description:
             switchbot_api.power_on_off()
-            power = constants.CirculatorPower.ON
-        adjust_fan_speed(switchbot_api, current_fan_speed, target_fan_speed)
+            power = constants.CirculatorPower.ON.description
+        adjust_fan_speed(current_fan_speed, target_fan_speed)
     
-    return power.description
+    return power
 
 
 # エアコンの動作を設定する関数
