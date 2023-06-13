@@ -132,10 +132,13 @@ def set_aircon(
 
     if setting.mode_setting == constants.AirconMode.FAN:
         if humidity > 60:
-            setting.temp_setting = "27"
-            setting.mode_setting = constants.AirconMode.DRY
-            setting.fan_speed_setting = constants.AirconFanSpeed.LOW
-            setting.power_setting = constants.AirconPower.ON
+            now = datetime.datetime.now(pytz.timezone('Asia/Tokyo'))
+            #電気代が安い時間のみ
+            if now.hour < 8 or now.hour >= 18:
+                setting.temp_setting = "27"
+                setting.mode_setting = constants.AirconMode.DRY
+                setting.fan_speed_setting = constants.AirconFanSpeed.LOW
+                setting.power_setting = constants.AirconPower.ON
         
     switchbot_api.aircon(setting.temp_setting, setting.mode_setting, setting.fan_speed_setting, setting.power_setting)
 
