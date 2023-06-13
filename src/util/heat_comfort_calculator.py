@@ -22,8 +22,9 @@ FLOOR_SURFACE_HEAT_TRANSFER_RESISTANCE = 0.15
 TEMP_DIFF_COEFFICIENT_UNDER_FLOOR = 0.7
 
 # 外気温が特定の温度以上の屋根表面温度
-ROOF_SURFACE_TEMP_OVER_30 = 40
-ROOF_SURFACE_TEMP_OVER_35 = 60
+ROOF_SURFACE_TEMP_OVER_25 = 40
+ROOF_SURFACE_TEMP_OVER_30 = 50
+ROOF_SURFACE_TEMP_OVER_35 = 70
 ROOF_SURFACE_TEMP_OVER_40 = 80
 
 # 外気温が特定の温度以上の時の西側外壁表面温度
@@ -57,6 +58,8 @@ def calculate_roof_surface_temperature(outdoor_temperature):
         return ROOF_SURFACE_TEMP_OVER_35
     elif outdoor_temperature >= 30:
         return ROOF_SURFACE_TEMP_OVER_30
+    elif outdoor_temperature >= 25:
+        return ROOF_SURFACE_TEMP_OVER_25
     else:
         return outdoor_temperature
 
