@@ -236,7 +236,7 @@ def main():
     logger.info(f"前回のエアコン設定からの経過:{now - last_setting_time}")
 
     aircon_setting = None
-    if now - last_setting_time > datetime.timedelta(hours=1):
+    if now - last_setting_time > datetime.timedelta(hours=2):
         aircon_setting = set_aircon(result.pmv, outdoor_temperature, (ceiling_humidity + floor_humidity) / 2)
         logger.info(f"{aircon_setting.mode_setting.description}:{aircon_setting.fan_speed_setting.description}:{aircon_setting.power_setting.description}")
     else:
