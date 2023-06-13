@@ -84,7 +84,7 @@ def post_command(device_id: str, command: str, parameter: str = "default", comma
     data = json.dumps(body)
     try:
         time.sleep(0.5)
-        logger.debug(data)
+        logger.info(data)
         r = requests.post(url, data=data, headers=generate_swt_header())
     except requests.exceptions.RequestException as e:
         # エラーログを出力します
