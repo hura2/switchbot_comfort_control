@@ -28,17 +28,17 @@ ROOF_SURFACE_TEMP_OVER_35 = 70
 ROOF_SURFACE_TEMP_OVER_40 = 80
 
 # 外気温が特定の温度以上の時の西側外壁表面温度
-WALL_SURFACE_TEMP_OVER_25 = 40
-WALL_SURFACE_TEMP_OVER_30 = 50
-WALL_SURFACE_TEMP_OVER_35 = 70
-WALL_SURFACE_TEMP_OVER_40 = 80
+WALL_SURFACE_TEMP_OVER_25 = 30
+WALL_SURFACE_TEMP_OVER_30 = 35
+WALL_SURFACE_TEMP_OVER_35 = 40
+WALL_SURFACE_TEMP_OVER_40 = 50
 
 def calculate_west_wall_temperature(outdoor_temperature, now):
     """外気温と時間に基づき西側外壁の表面温度を計算する"""
-    if outdoor_temperature < 25 or not(time(13, 0) <= now.time() < time(18, 0)):
-        # 外気温が25度未満または西日の時間帯でない場合、西壁の表面温度は外気温と等しいとする
+    if not(time(13, 0) <= now.time() < time(18, 0)):
         return outdoor_temperature
-    elif outdoor_temperature >= 40:
+    
+    if outdoor_temperature >= 40:
         return WALL_SURFACE_TEMP_OVER_40
     elif outdoor_temperature >= 35:
         return WALL_SURFACE_TEMP_OVER_35
@@ -76,9 +76,10 @@ def calculate_pmv(
 ):
     # 屋根の表面温度を取得
     roof_surface_temp = calculate_roof_surface_temperature(outdoor_temperature)
-
+    logger.info(roof_surface_temp)
     #夏の西日の影響を考慮する
     west_wall_temp = calculate_west_wall_temperature(outdoor_temperature, now)
+    logger.info(west_wall_temp)
     # 壁、天井、床の内部表面温度を計算
     wall_temp = calculate_wall_surface_temperature(
         west_wall_temp, floor_temperature, WALL_THERMAL_CONDUCTIVITY, WINDOW_THERMAL_CONDUCTIVITY, WINDOW_TO_WALL_RATIO, WALL_SURFACE_HEAT_TRANSFER_RESISTANCE)
