@@ -243,13 +243,19 @@ def main():
     # logger.info(f"前回のエアコン設定からの経過:{now - last_setting_time}")
 
     aircon_setting = None
+    # 現在の時刻と最後にエアコン設定を変更した時刻の差が2時間以上かどうかを確認します。
     if now - last_setting_time > datetime.timedelta(hours=2):
+        # 2時間以上経過していた場合、エアコンの設定を更新します。
+        # 新たなエアコン設定は、現在のPMV値、屋外気温、絶対湿度を用いて set_aircon 関数で決定します。
         aircon_setting = set_aircon(result.pmv, outdoor_temperature, absolute_humidity)
         logger.info(f"{aircon_setting.mode_setting.description}:{aircon_setting.fan_speed_setting.description}:{aircon_setting.power_setting.description}")
     else:
+        # 2時間以内にエアコン設定が変更された場合、現在のモードが冷房または除湿モードかどうかを確認します。
         if cuttent_mode == constants.AirconMode.COOLING.id or cuttent_mode == constants.AirconMode.DRY.id:
+            # 現在のモードが冷房または除湿の場合、そのモードを継続します。
             logger.info("現在のモードを継続します: " + constants.AirconMode.get_description(cuttent_mode))
         else:
+            # 現在のモードが冷房や除湿以外の場合は、エアコンの設定を更新します。
             aircon_setting = set_aircon(result.pmv, outdoor_temperature, absolute_humidity)
             logger.info(f"{aircon_setting.mode_setting.description}:{aircon_setting.fan_speed_setting.description}:{aircon_setting.power_setting.description}")
 
