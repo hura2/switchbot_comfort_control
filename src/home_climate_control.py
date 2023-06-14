@@ -259,7 +259,7 @@ def main():
         logger.info(f"操作時間外")
         power = set_circulator(current_power, current_fan_speed, 0)
         fan_speed = 0
-        return True
+        # return True
     else:
         # 温度差に基づいてサーキュレーターを設定
         power, fan_speed = set_fan_speed_based_on_temperature_diff(temperature_diff, current_power, current_fan_speed)
