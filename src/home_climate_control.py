@@ -32,7 +32,7 @@ def adjust_fan_speed(current_fan_speed, target_fan_speed):
     return adjusted_fan_speed
 
 def set_circulator(current_power, current_fan_speed, target_fan_speed):
-    power = current_fan_speed
+    power = current_power
     if target_fan_speed == 0:
         if current_power == constants.CirculatorPower.ON.description:
             adjust_fan_speed(current_fan_speed, target_fan_speed)
