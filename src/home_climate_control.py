@@ -257,7 +257,8 @@ def main():
     power, fan_speed = None, None
     if bedtime:
         logger.info(f"操作時間外")
-        power, fan_speed = set_circulator(current_power, current_fan_speed, 0)
+        power = set_circulator(current_power, current_fan_speed, 0)
+        fan_speed = 0
         return True
     else:
         # 温度差に基づいてサーキュレーターを設定
@@ -280,9 +281,10 @@ def main():
     if aircon_setting is not None:
         analytics.insert_aircon_setting(supabase, aircon_setting.temp_setting, aircon_setting.mode_setting.id, aircon_setting.fan_speed_setting.id, aircon_setting.power_setting.id, now)
     analytics.insert_circulator_setting(supabase, fan_speed, power, now)
+
     return True
 
-
+    
 # メイン関数を呼び出す
 if __name__ == "__main__":
     main()
