@@ -76,10 +76,8 @@ def calculate_pmv(
 ):
     # 屋根の表面温度を取得
     roof_surface_temp = calculate_roof_surface_temperature(outdoor_temperature)
-    logger.info(roof_surface_temp)
     #夏の西日の影響を考慮する
     west_wall_temp = calculate_west_wall_temperature(outdoor_temperature, now)
-    logger.info(west_wall_temp)
     # 壁、天井、床の内部表面温度を計算
     wall_temp = calculate_wall_surface_temperature(
         west_wall_temp, floor_temperature, WALL_THERMAL_CONDUCTIVITY, WINDOW_THERMAL_CONDUCTIVITY, WINDOW_TO_WALL_RATIO, WALL_SURFACE_HEAT_TRANSFER_RESISTANCE)
@@ -145,3 +143,16 @@ def calculate_wall_surface_temperature(
                                     (1 - window_to_wall_ratio) * wall_thermal_conductivity
     
     return calculate_interior_surface_temperature(outdoor_temperature, indoor_temperature,composite_thermal_conductivity, surface_heat_transfer_resistance)
+
+
+def calculate_absolute_humidity(temperature, relative_humidity):
+    # 室温を絶対温度（ケルビン）に変換
+    temperature_kelvin = temperature + 273.15
+
+    # 飽和水蒸気圧を計算 (Tetensの式)
+    saturated_vapor_pressure = 6.1078 * 10 ** ((7.5 * temperature) / (temperature + 237.3))
+
+    # 絶対湿度を計算
+    absolute_humidity = ((217 * (relative_humidity / 100) * saturated_vapor_pressure) / temperature_kelvin)
+
+    return absolute_humidity

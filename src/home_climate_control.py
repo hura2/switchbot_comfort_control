@@ -32,7 +32,7 @@ def adjust_fan_speed(current_fan_speed, target_fan_speed):
     return adjusted_fan_speed
 
 def set_circulator(current_power, current_fan_speed, target_fan_speed):
-    power = constants.CirculatorPower.ON.description
+    power = current_fan_speed
     if target_fan_speed == 0:
         if current_power == constants.CirculatorPower.ON.description:
             adjust_fan_speed(current_fan_speed, target_fan_speed)
@@ -51,7 +51,7 @@ def set_circulator(current_power, current_fan_speed, target_fan_speed):
 def set_aircon(
     pmv: int,
     outdoor_temperature: float,
-    humidity: float
+    absolute_humidity: float
 ):
     # Define aircon settings
     setting = data_types.AirconSetting("","","","")
@@ -131,14 +131,14 @@ def set_aircon(
         setting.mode_setting = constants.AirconMode.POWERFUL_COOLING
 
     if setting.mode_setting == constants.AirconMode.FAN:
-        if humidity > 60:
-            now = datetime.datetime.now(pytz.timezone('Asia/Tokyo'))
-            #電気代が安い時間のみ
-            if now.hour < 8 or now.hour >= 18:
-                setting.temp_setting = "27"
-                setting.mode_setting = constants.AirconMode.DRY
-                setting.fan_speed_setting = constants.AirconFanSpeed.LOW
-                setting.power_setting = constants.AirconPower.ON
+        if absolute_humidity > 13:
+            # now = datetime.datetime.now(pytz.timezone('Asia/Tokyo'))
+            # #電気代が安い時間のみ
+            # if now.hour < 8 or now.hour >= 18:
+            setting.temp_setting = "27"
+            setting.mode_setting = constants.AirconMode.DRY
+            setting.fan_speed_setting = constants.AirconFanSpeed.LOW
+            setting.power_setting = constants.AirconPower.ON
         
     switchbot_api.aircon(setting.temp_setting, setting.mode_setting, setting.fan_speed_setting, setting.power_setting)
 
@@ -217,6 +217,8 @@ def main():
     logger.info(f"天井:温度{ceiling_temperature}°, 湿度{ceiling_humidity}%")
     logger.info(f"床:温度{floor_temperature}°, 湿度{floor_humidity}%")
     logger.info(f"外部:温度{outdoor_temperature}°, 湿度{outdoor_humidity}%")
+    absolute_humidity = heat_comfort_calculator.calculate_absolute_humidity(floor_temperature, (ceiling_humidity + floor_humidity) / 2)
+    logger.info(f"相対湿度{(ceiling_humidity + floor_humidity) / 2}°, 絶対湿度{absolute_humidity:.2f}g/㎥")
 
     # METとICLの値を計算
     met, icl = calculate_met_icl(outdoor_temperature, bedtime)
@@ -233,17 +235,22 @@ def main():
 
     # エアコンの設定
     last_setting_time = datetime.datetime.strptime(last_setting_time, "%Y-%m-%dT%H:%M:%S.%f%z")
-    logger.info(f"前回のエアコン設定からの経過:{now - last_setting_time}")
+    elapsed_time = now - last_setting_time
+    hours, remainder = divmod(elapsed_time.seconds, 3600)
+    minutes, _ = divmod(remainder, 60)
+    logger.info(f"前回のエアコン設定からの経過: {hours}時間{minutes}分")
+
+    # logger.info(f"前回のエアコン設定からの経過:{now - last_setting_time}")
 
     aircon_setting = None
     if now - last_setting_time > datetime.timedelta(hours=2):
-        aircon_setting = set_aircon(result.pmv, outdoor_temperature, (ceiling_humidity + floor_humidity) / 2)
+        aircon_setting = set_aircon(result.pmv, outdoor_temperature, absolute_humidity)
         logger.info(f"{aircon_setting.mode_setting.description}:{aircon_setting.fan_speed_setting.description}:{aircon_setting.power_setting.description}")
     else:
         if cuttent_mode == constants.AirconMode.COOLING.id or cuttent_mode == constants.AirconMode.DRY.id:
             logger.info("現在のモードを継続します: " + constants.AirconMode.get_description(cuttent_mode))
         else:
-            aircon_setting = set_aircon(result.pmv, outdoor_temperature, (ceiling_humidity + floor_humidity) / 2)
+            aircon_setting = set_aircon(result.pmv, outdoor_temperature, absolute_humidity)
             logger.info(f"{aircon_setting.mode_setting.description}:{aircon_setting.fan_speed_setting.description}:{aircon_setting.power_setting.description}")
 
     # 操作時間外なら風量を0に設定して終了
