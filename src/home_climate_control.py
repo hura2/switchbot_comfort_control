@@ -243,8 +243,8 @@ def main():
     # logger.info(f"前回のエアコン設定からの経過:{now - last_setting_time}")
 
     aircon_setting = None
-    # 現在の時刻と最後にエアコン設定を変更した時刻の差が2時間以上かどうかを確認します。
-    if now - last_setting_time > datetime.timedelta(hours=2):
+    # 現在の時刻と最後にエアコン設定を変更した時刻の差が1時間以上かどうかを確認します。
+    if now - last_setting_time > datetime.timedelta(hours=1):
         # 2時間以上経過していた場合、エアコンの設定を更新します。
         # 新たなエアコン設定は、現在のPMV値、屋外気温、絶対湿度を用いて set_aircon 関数で決定します。
         aircon_setting = set_aircon(result.pmv, outdoor_temperature, absolute_humidity)
