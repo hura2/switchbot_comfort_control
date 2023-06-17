@@ -140,7 +140,7 @@ def set_aircon(
             setting.fan_speed_setting = constants.AirconFanSpeed.LOW
             setting.power_setting = constants.AirconPower.ON
         
-    switchbot_api.aircon(setting.temp_setting, setting.mode_setting, setting.fan_speed_setting, setting.power_setting)
+    # switchbot_api.aircon(setting.temp_setting, setting.mode_setting, setting.fan_speed_setting, setting.power_setting)
 
     return setting
 
@@ -231,10 +231,10 @@ def main():
 
     #前回の設定値を取得
     current_power, current_fan_speed = analytics.get_latest_circulator_setting(supabase)
-    cuttent_mode, last_setting_time = analytics.get_latest_aircon_setting(supabase)
+    current_aircon_temp, current_aircon_mode, current_aircon_fan_spped, current_aircon__power, aircon_last_setting_time = analytics.get_latest_aircon_setting(supabase)
 
     # エアコンの設定
-    last_setting_time = datetime.datetime.strptime(last_setting_time, "%Y-%m-%dT%H:%M:%S.%f%z")
+    last_setting_time = datetime.datetime.strptime(aircon_last_setting_time, "%Y-%m-%dT%H:%M:%S.%f%z")
     elapsed_time = now - last_setting_time
     hours, remainder = divmod(elapsed_time.seconds, 3600)
     minutes, _ = divmod(remainder, 60)
@@ -242,22 +242,34 @@ def main():
 
     # logger.info(f"前回のエアコン設定からの経過:{now - last_setting_time}")
 
-    aircon_setting = None
+
+    ac_settings_changed = False
+    aircon_setting = set_aircon(result.pmv, outdoor_temperature, absolute_humidity)
     # 現在の時刻と最後にエアコン設定を変更した時刻の差が1時間以上かどうかを確認します。
     if now - last_setting_time > datetime.timedelta(hours=1):
         # 2時間以上経過していた場合、エアコンの設定を更新します。
         # 新たなエアコン設定は、現在のPMV値、屋外気温、絶対湿度を用いて set_aircon 関数で決定します。
-        aircon_setting = set_aircon(result.pmv, outdoor_temperature, absolute_humidity)
-        logger.info(f"{aircon_setting.mode_setting.description}:{aircon_setting.fan_speed_setting.description}:{aircon_setting.power_setting.description}")
+        switchbot_api.aircon(aircon_setting.temp_setting, aircon_setting.mode_setting, aircon_setting.fan_speed_setting, aircon_setting.power_setting)
+        ac_settings_changed = True
     else:
-        # 2時間以内にエアコン設定が変更された場合、現在のモードが冷房または除湿モードかどうかを確認します。
-        if cuttent_mode == constants.AirconMode.COOLING.id or cuttent_mode == constants.AirconMode.DRY.id:
-            # 現在のモードが冷房または除湿の場合、そのモードを継続します。
-            logger.info("現在のモードを継続します: " + constants.AirconMode.get_description(cuttent_mode))
+        # 1時間以内にエアコン設定が変更された場合、現在のモードが冷房または除湿モードかどうかを確認します。
+        if current_aircon_mode == constants.AirconMode.COOLING.id or current_aircon_mode == constants.AirconMode.DRY.id:
+            if current_aircon_mode == aircon_setting.mode_setting.id and \
+                (str(current_aircon_temp) != aircon_setting.temp_setting or
+                    str(current_aircon_fan_spped) != aircon_setting.fan_speed_setting.id or
+                    current_aircon__power != aircon_setting.power_setting.id):
+                logger.info("現在のモードを継続しつつ、設定を変更します")
+                switchbot_api.aircon(aircon_setting.temp_setting, aircon_setting.mode_setting, aircon_setting.fan_speed_setting, aircon_setting.power_setting)
+                ac_settings_changed = True
+            else:
+                # 現在のモードが冷房または除湿の場合、そのモードを継続します。
+                logger.info("現在の設定を継続します")
         else:
             # 現在のモードが冷房や除湿以外の場合は、エアコンの設定を更新します。
-            aircon_setting = set_aircon(result.pmv, outdoor_temperature, absolute_humidity)
-            logger.info(f"{aircon_setting.mode_setting.description}:{aircon_setting.fan_speed_setting.description}:{aircon_setting.power_setting.description}")
+            switchbot_api.aircon(aircon_setting.temp_setting, aircon_setting.mode_setting, aircon_setting.fan_speed_setting, aircon_setting.power_setting)
+            ac_settings_changed = True
+
+    logger.info(f"{aircon_setting.mode_setting.description}:{aircon_setting.fan_speed_setting.description}:{aircon_setting.power_setting.description}")
 
     # 操作時間外なら風量を0に設定して終了
     power, fan_speed = None, None
@@ -284,7 +296,7 @@ def main():
     analytics.insert_humidity(supabase, constants.Location.OUTDOOR.id, outdoor_humidity, now)
     analytics.insert_surface_temperature(supabase, result.wall, result.ceiling, result.floor, now)
     analytics.insert_pmv(supabase, result.pmv, result.met, result.clo, result.air, now)
-    if aircon_setting is not None:
+    if ac_settings_changed:
         analytics.insert_aircon_setting(supabase, aircon_setting.temp_setting, aircon_setting.mode_setting.id, aircon_setting.fan_speed_setting.id, aircon_setting.power_setting.id, now)
     analytics.insert_circulator_setting(supabase, fan_speed, power, now)
 

@@ -1,3 +1,5 @@
+from typing import Tuple
+import datetime
 from supabase import Client
 
 def insert_location(client: Client, location_name, created_at):
@@ -37,9 +39,9 @@ def insert_aircon_setting(client: Client, temperature, mode, fan_speed, power, c
     result = client.from_("aircon_settings").insert([{"temperature": temperature, "mode": mode, "fan_speed": fan_speed, "power": power, "created_at": created_at.isoformat()}]).execute()
     return result
 
-def get_latest_aircon_setting(client: Client):
-    data = client.table("aircon_settings").select("mode, created_at").order("created_at",desc=True).limit(1).execute()
-    return data.data[0]["mode"], data.data[0]["created_at"]
+def get_latest_aircon_setting(client: Client) -> Tuple[int, str, int, str, datetime.datetime]:
+    data = client.table("aircon_settings").select("*").order("created_at",desc=True).limit(1).execute()
+    return data.data[0]["temperature"], data.data[0]["mode"], data.data[0]["fan_speed"], data.data[0]["power"],  data.data[0]["created_at"]
 
 def insert_circulator_setting(client: Client, fan_speed, power, created_at):
     result = client.from_("circulator_settings").insert([{"fan_speed": fan_speed, "power": power, "created_at": created_at.isoformat()}]).execute()
