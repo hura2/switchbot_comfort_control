@@ -122,13 +122,13 @@ def aircon(temp_setting: str, mode_setting: constants.AirconMode, fan_speed_sett
     """
     エアコンの操作を行う関数
     """
-    if mode_setting == constants.AirconMode.POWERFUL_COOLING.id:
+    if mode_setting.id == constants.AirconMode.POWERFUL_COOLING.id:
         post_command(AIR_CONDITIONER_SUPPORT_DEVICE_ID,
                      constants.AirconMode.POWERFUL_COOLING.description, "default", "customize")
         return
-    if mode_setting == constants.AirconMode.POWERFUL_HEATING.id:
+    if mode_setting.id == constants.AirconMode.POWERFUL_HEATING.id:
         post_command(AIR_CONDITIONER_SUPPORT_DEVICE_ID,
-                     constants.AirconMode.POWERFUL_COOLING.POWERFUL_HEATING, "default", "customize")
+                     constants.AirconMode.POWERFUL_HEATING.description, "default", "customize")
         return
     post_command(AIR_CONDITIONER_DEVICE_ID, "setAll", f"{temp_setting},{mode_setting.id},{fan_speed_setting.id},{power_setting.id}", "command")
 

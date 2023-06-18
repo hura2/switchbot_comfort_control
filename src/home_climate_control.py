@@ -58,10 +58,16 @@ def set_aircon(
 
     if pmv <= -3:
         # pmvが-3以下の場合の処理
+        setting.temp_setting = "25"
         setting.mode_setting = constants.AirconMode.POWERFUL_HEATING
+        setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
+        setting.power_setting = constants.AirconPower.ON
     elif pmv <= -2.5:
         # pmvが-2.5以下の場合の処理
+        setting.temp_setting = "25"
         setting.mode_setting = constants.AirconMode.POWERFUL_HEATING
+        setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
+        setting.power_setting = constants.AirconPower.ON
     elif pmv <= -2:
         # pmvが-2以下の場合の処理
         setting.temp_setting = "25"
@@ -125,10 +131,16 @@ def set_aircon(
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= 2.5:
         # pmvが2.5以下の場合の処理
+        setting.temp_setting = "22"
         setting.mode_setting = constants.AirconMode.POWERFUL_COOLING
+        setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
+        setting.power_setting = constants.AirconPower.ON
     else:
         # pmvが3以上の場合の処理
+        setting.temp_setting = "22"
         setting.mode_setting = constants.AirconMode.POWERFUL_COOLING
+        setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
+        setting.power_setting = constants.AirconPower.ON
 
     if setting.mode_setting == constants.AirconMode.FAN:
         if absolute_humidity > 13:
@@ -261,6 +273,9 @@ def main():
                 logger.info("現在のモードを継続しつつ、設定を変更します")
                 switchbot_api.aircon(aircon_setting.temp_setting, aircon_setting.mode_setting, aircon_setting.fan_speed_setting, aircon_setting.power_setting)
                 ac_settings_changed = True
+            elif aircon_setting.mode_setting.id == constants.AirconMode.POWERFUL_COOLING.id:
+                switchbot_api.aircon(aircon_setting.temp_setting, aircon_setting.mode_setting, aircon_setting.fan_speed_setting, aircon_setting.power_setting)
+                ac_settings_changed = True                
             else:
                 # 現在のモードが冷房または除湿の場合、そのモードを継続します。
                 logger.info("現在の設定を継続します")
