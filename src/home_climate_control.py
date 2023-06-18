@@ -119,13 +119,13 @@ def set_aircon(
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= 0.45:
         # pmvが1.5以下の場合の処理
-        setting.temp_setting = "26"
+        setting.temp_setting = "23"
         setting.mode_setting = constants.AirconMode.COOLING
         setting.fan_speed_setting = constants.AirconFanSpeed.MEDIUM
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= 0.5:
         # pmvが2以下の場合の処理
-        setting.temp_setting = "26"
+        setting.temp_setting = "23"
         setting.mode_setting = constants.AirconMode.COOLING
         setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
         setting.power_setting = constants.AirconPower.ON
