@@ -157,7 +157,7 @@ def set_aircon(
 
     return setting
 
-def set_fan_speed_based_on_temperature_diff(temperature_diff: float, current_power: str, current_fan_speed: str):
+def set_fan_speed_based_on_temperature_diff(outdoor_temperature: float, temperature_diff: float, current_power: str, current_fan_speed: str):
     """温度差に基づいて風量を設定する
 
     温度差が特定の閾値を超える場合、対応する風量に設定する。
@@ -169,7 +169,13 @@ def set_fan_speed_based_on_temperature_diff(temperature_diff: float, current_pow
     - 温度差が1.0以上：風量1
     それ以下の場合は風量を0に設定する。
     """
-    for threshold, speed in [(3.0, 4), (2.5, 4), (2.0, 3), (1.5, 2), (1.0, 1)]:
+    x = [(3.0, 4), (2.5, 4), (2.0, 3), (1.5, 2), (1.0, 1)]
+    if outdoor_temperature >= 25:
+        x = [(3.0, 4), (2.0, 4), (1.5, 3), (1.0, 2), (0.5, 1)]
+    else:
+        x = [(3.0, 4), (2.5, 4), (2.0, 3), (1.5, 2), (1.0, 1)]
+
+    for threshold, speed in x:
         if temperature_diff >= threshold:
             return set_circulator(current_power, current_fan_speed, speed), speed
         
@@ -296,7 +302,7 @@ def main():
         # return True
     else:
         # 温度差に基づいてサーキュレーターを設定
-        power, fan_speed = set_fan_speed_based_on_temperature_diff(temperature_diff, current_power, current_fan_speed)
+        power, fan_speed = set_fan_speed_based_on_temperature_diff(outdoor_temperature, temperature_diff, current_power, current_fan_speed)
 
     # ログ出力
     logger.info(f"現在のサーキュレーターの電源:{current_power}")
