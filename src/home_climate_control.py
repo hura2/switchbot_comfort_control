@@ -51,7 +51,8 @@ def set_circulator(current_power, current_fan_speed, target_fan_speed):
 def set_aircon(
     pmv: int,
     outdoor_temperature: float,
-    absolute_humidity: float
+    absolute_humidity: float,
+    humidity: float
 ):
     # Define aircon settings
     setting = data_types.AirconSetting("","","","")
@@ -143,7 +144,7 @@ def set_aircon(
         setting.power_setting = constants.AirconPower.ON
 
     if setting.mode_setting == constants.AirconMode.FAN:
-        if absolute_humidity > 13:
+        if absolute_humidity > 13 or humidity > 50:
             # now = datetime.datetime.now(pytz.timezone('Asia/Tokyo'))
             # #電気代が安い時間のみ
             # if now.hour < 8 or now.hour >= 18:
@@ -256,7 +257,7 @@ def main():
 
 
     ac_settings_changed = False
-    aircon_setting = set_aircon(result.pmv, outdoor_temperature, absolute_humidity)
+    aircon_setting = set_aircon(result.pmv, outdoor_temperature, absolute_humidity, (ceiling_humidity + floor_humidity) / 2)
     # 現在の時刻と最後にエアコン設定を変更した時刻の差が1時間以上かどうかを確認します。
     if now - last_setting_time > datetime.timedelta(hours=1):
         # 2時間以上経過していた場合、エアコンの設定を更新します。
