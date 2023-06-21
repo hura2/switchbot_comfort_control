@@ -144,7 +144,7 @@ def set_aircon(
         setting.power_setting = constants.AirconPower.ON
 
     if setting.mode_setting == constants.AirconMode.FAN:
-        if absolute_humidity > 13 or humidity > 50:
+        if absolute_humidity > 12 or humidity > 55:
             # now = datetime.datetime.now(pytz.timezone('Asia/Tokyo'))
             # #電気代が安い時間のみ
             # if now.hour < 8 or now.hour >= 18:
