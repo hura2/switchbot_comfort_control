@@ -293,7 +293,8 @@ def main():
             switchbot_api.aircon(aircon_setting.temp_setting, aircon_setting.mode_setting, aircon_setting.fan_speed_setting, aircon_setting.power_setting)
             ac_settings_changed = True
 
-    logger.info(f"{aircon_setting.mode_setting.description}:{aircon_setting.fan_speed_setting.description}:{aircon_setting.power_setting.description}")
+    if ac_settings_changed:
+        logger.info(f"{aircon_setting.mode_setting.description}:{aircon_setting.fan_speed_setting.description}:{aircon_setting.power_setting.description}")
 
     # 操作時間外なら風量を0に設定して終了
     power, fan_speed = None, None
