@@ -170,10 +170,6 @@ def set_fan_speed_based_on_temperature_diff(outdoor_temperature: float, temperat
     それ以下の場合は風量を0に設定する。
     """
     x = [(3.0, 4), (2.5, 4), (2.0, 3), (1.5, 2), (1.0, 1)]
-   # if outdoor_temperature >= 25:
-    #     x = [(3.0, 4), (2.0, 4), (1.5, 3), (1.0, 2), (0.5, 1)]
-    # else:
-    #     x = [(3.0, 4), (2.5, 4), (2.0, 3), (1.5, 2), (1.0, 1)]
 
     for threshold, speed in x:
         if temperature_diff >= threshold:
