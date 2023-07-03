@@ -273,18 +273,24 @@ def main():
         switchbot_api.aircon(aircon_setting.temp_setting, aircon_setting.mode_setting, aircon_setting.fan_speed_setting, aircon_setting.power_setting)
         ac_settings_changed = True
     else:
+        logger.info(current_aircon_mode)
+        logger.info(aircon_setting.mode_setting.id)
         # 1時間以内にエアコン設定が変更された場合、現在のモードが冷房または除湿モードかどうかを確認します。
         if current_aircon_mode == constants.AirconMode.COOLING.id or current_aircon_mode == constants.AirconMode.DRY.id:
-            if current_aircon_mode != aircon_setting.mode_setting.id or \
+            if current_aircon_mode != aircon_setting.mode_setting.id:
+                if  aircon_setting.mode_setting.id == constants.AirconMode.COOLING.id or \
+                    aircon_setting.mode_setting.id == constants.AirconMode.DRY.id or \
+                    aircon_setting.mode_setting.id == constants.AirconMode.POWERFUL_COOLING.id:
+                    logger.info("冷房を継続しつつ、設定を変更します")
+                    switchbot_api.aircon(aircon_setting.temp_setting, aircon_setting.mode_setting, aircon_setting.fan_speed_setting, aircon_setting.power_setting)
+                    ac_settings_changed = True
+            if current_aircon_mode == aircon_setting.mode_setting.id and \
                 (str(current_aircon_temp) != aircon_setting.temp_setting or
                     str(current_aircon_fan_spped) != aircon_setting.fan_speed_setting.id or
                     current_aircon__power != aircon_setting.power_setting.id):
-                logger.info("冷房・除湿モードを継続しつつ、設定を変更します")
+                logger.info("現在のモードを継続しつつ、設定を変更します")
                 switchbot_api.aircon(aircon_setting.temp_setting, aircon_setting.mode_setting, aircon_setting.fan_speed_setting, aircon_setting.power_setting)
                 ac_settings_changed = True
-            elif aircon_setting.mode_setting.id == constants.AirconMode.POWERFUL_COOLING.id:
-                switchbot_api.aircon(aircon_setting.temp_setting, aircon_setting.mode_setting, aircon_setting.fan_speed_setting, aircon_setting.power_setting)
-                ac_settings_changed = True                
             else:
                 # 現在のモードが冷房または除湿の場合、そのモードを継続します。
                 logger.info(f"現在の設定を継続します:{current_aircon_temp}:{constants.AirconMode.get_description(current_aircon_mode)}:{constants.AirconFanSpeed.get_description(str(current_aircon_fan_spped))}:{constants.AirconPower.get_description(current_aircon__power)}")
