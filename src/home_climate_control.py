@@ -190,12 +190,7 @@ def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
     now = datetime.datetime.now(pytz.timezone('Asia/Tokyo'))
     if outdoor_temperature >= 20 or 6 <= now.month <= 9:
         met = 1.0 if bedtime else 1.1
-<<<<<<< HEAD
         icl = 0.8 if bedtime else 0.6
-=======
-        icl = 0.9 if bedtime else 0.6
->>>>>>> f9484ed5471c6493cd74dd238a91b533d8077fad
-
     elif outdoor_temperature >= 10:
         met = 1.0 if bedtime else 1.1
         icl = 1.0 if bedtime else 0.8
