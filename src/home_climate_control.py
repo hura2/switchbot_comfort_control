@@ -190,7 +190,7 @@ def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
     now = datetime.datetime.now(pytz.timezone('Asia/Tokyo'))
     if outdoor_temperature >= 20 or 6 <= now.month <= 9:
         met = 1.0 if bedtime else 1.1
-        icl = 1.0 if bedtime else 0.6
+        icl = 0.8 if bedtime else 0.6
 
     elif outdoor_temperature >= 10:
         met = 1.0 if bedtime else 1.1
@@ -267,14 +267,14 @@ def main():
     ac_settings_changed = False
     aircon_setting = set_aircon(result.pmv, outdoor_temperature, absolute_humidity, (ceiling_humidity + floor_humidity) / 2)
     # 現在の時刻と最後にエアコン設定を変更した時刻の差が1時間以上かどうかを確認します。
-    if now - last_setting_time > datetime.timedelta(hours=1):
+    if now - last_setting_time > datetime.timedelta(minutes=30):
         # 2時間以上経過していた場合、エアコンの設定を更新します。
         # 新たなエアコン設定は、現在のPMV値、屋外気温、絶対湿度を用いて set_aircon 関数で決定します。
         switchbot_api.aircon(aircon_setting.temp_setting, aircon_setting.mode_setting, aircon_setting.fan_speed_setting, aircon_setting.power_setting)
         ac_settings_changed = True
     else:
-        logger.info(current_aircon_mode)
-        logger.info(aircon_setting.mode_setting.id)
+        # logger.info(current_aircon_mode)
+        # logger.info(aircon_setting.mode_setting.id)
         # 1時間以内にエアコン設定が変更された場合、現在のモードが冷房または除湿モードかどうかを確認します。
         if current_aircon_mode == constants.AirconMode.COOLING.id or current_aircon_mode == constants.AirconMode.DRY.id:
             if current_aircon_mode != aircon_setting.mode_setting.id:
