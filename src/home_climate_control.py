@@ -266,7 +266,7 @@ def main():
     ac_settings_changed = False
     aircon_setting = set_aircon(result.pmv, outdoor_temperature, absolute_humidity, (ceiling_humidity + floor_humidity) / 2)
     # 現在の時刻と最後にエアコン設定を変更した時刻の差が1時間以上かどうかを確認します。
-    if now - last_setting_time > datetime.timedelta(minutes=30):
+    if now - last_setting_time > datetime.timedelta(hours=1):
         # 2時間以上経過していた場合、エアコンの設定を更新します。
         # 新たなエアコン設定は、現在のPMV値、屋外気温、絶対湿度を用いて set_aircon 関数で決定します。
         switchbot_api.aircon(aircon_setting.temp_setting, aircon_setting.mode_setting, aircon_setting.fan_speed_setting, aircon_setting.power_setting)
