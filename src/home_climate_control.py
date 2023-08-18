@@ -149,7 +149,7 @@ def set_aircon(
             # #電気代が安い時間のみ
             # if now.hour < 8 or now.hour >= 18:
             setting.temp_setting = "28"
-            setting.mode_setting = constants.AirconMode.DRY
+            setting.mode_setting = constants.AirconMode.COOLING
             setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
             setting.power_setting = constants.AirconPower.ON
         
