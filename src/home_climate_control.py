@@ -102,27 +102,27 @@ def set_aircon(
 
     elif pmv <= 0:
         # pmvが0以下の場合の処理
-        setting.temp_setting = "25"
+        setting.temp_setting = "29"
         setting.mode_setting = constants.AirconMode.FAN
-        setting.fan_speed_setting = constants.AirconFanSpeed.LOW
+        setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= 0.3:
         # pmvが0.5以下の場合の処理
-        setting.temp_setting = "25"
+        setting.temp_setting = "28"
         setting.mode_setting = constants.AirconMode.FAN
-        setting.fan_speed_setting = constants.AirconFanSpeed.LOW
+        setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= 0.4:
         # pmvが1以下の場合の処理
-        setting.temp_setting = "26"
+        setting.temp_setting = "27"
         setting.mode_setting = constants.AirconMode.COOLING
-        setting.fan_speed_setting = constants.AirconFanSpeed.LOW
+        setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= 0.45:
         # pmvが1.5以下の場合の処理
-        setting.temp_setting = "25"
+        setting.temp_setting = "26"
         setting.mode_setting = constants.AirconMode.COOLING
-        setting.fan_speed_setting = constants.AirconFanSpeed.MEDIUM
+        setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= 0.5:
         # pmvが2以下の場合の処理
