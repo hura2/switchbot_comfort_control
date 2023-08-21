@@ -108,25 +108,25 @@ def set_aircon(
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= 0.2:
         # pmvが0.2以下の場合の処理
-        setting.temp_setting = "26"
+        setting.temp_setting = "28"
         setting.mode_setting = constants.AirconMode.FAN
         setting.fan_speed_setting = constants.AirconFanSpeed.LOW
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= 0.4:
         # pmvが0.4以下の場合の処理
-        setting.temp_setting = "25.5"
+        setting.temp_setting = "26"
         setting.mode_setting = constants.AirconMode.COOLING
-        setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
+        setting.fan_speed_setting = constants.AirconFanSpeed.LOW
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= 0.45:
         # pmvが0.45以下の場合の処理
-        setting.temp_setting = "25"
+        setting.temp_setting = "25.5"
         setting.mode_setting = constants.AirconMode.COOLING
-        setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
+        setting.fan_speed_setting = constants.AirconFanSpeed.MEDIUM
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= 0.5:
         # pmvが0.5以下の場合の処理
-        setting.temp_setting = "24.5"
+        setting.temp_setting = "25"
         setting.mode_setting = constants.AirconMode.COOLING
         setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
         setting.power_setting = constants.AirconPower.ON
@@ -142,7 +142,7 @@ def set_aircon(
             # now = datetime.datetime.now(pytz.timezone('Asia/Tokyo'))
             # #電気代が安い時間のみ
             # if now.hour < 8 or now.hour >= 18:
-            setting.temp_setting = "26"
+            setting.temp_setting = "27"
             setting.mode_setting = constants.AirconMode.DRY
             setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
             setting.power_setting = constants.AirconPower.ON
@@ -163,7 +163,10 @@ def set_fan_speed_based_on_temperature_diff(outdoor_temperature: float, temperat
     - 温度差が1.0以上：風量1
     それ以下の場合は風量を0に設定する。
     """
-    x = [(3.0, 4), (2.5, 4), (2.0, 3), (1.5, 2), (1.0, 1)]
+    if outdoor_temperature >= 25:
+        x = [(3.0, 2), (2.5, 1), (2.0, 1), (1.5, 0), (1.0, 0)]
+    else:
+        x = [(3.0, 4), (2.5, 4), (2.0, 3), (1.5, 2), (1.0, 1)]
 
     for threshold, speed in x:
         if temperature_diff >= threshold:
