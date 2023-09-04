@@ -61,80 +61,80 @@ def set_aircon(
         # pmvが-3以下の場合の処理
         setting.temp_setting = "25"
         setting.mode_setting = constants.AirconMode.POWERFUL_HEATING
-        setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
+        setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= -2.5:
         # pmvが-2.5以下の場合の処理
         setting.temp_setting = "25"
         setting.mode_setting = constants.AirconMode.POWERFUL_HEATING
-        setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
+        setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= -2:
         # pmvが-2以下の場合の処理
         setting.temp_setting = "25"
         setting.mode_setting = constants.AirconMode.HEATING
-        setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
+        setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= -1.5:
         # pmvが-1.5以下の場合の処理
         setting.temp_setting = "25"
         setting.mode_setting = constants.AirconMode.HEATING
-        setting.fan_speed_setting = constants.AirconFanSpeed.MEDIUM
+        setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= -1:
         # pmvが-1以下の場合の処理
         setting.temp_setting = "25"
         setting.mode_setting = constants.AirconMode.HEATING
-        setting.fan_speed_setting = constants.AirconFanSpeed.LOW
+        setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= -0.3:
         # pmvが-0.3以下の場合の処理
         if outdoor_temperature >= 25:
             setting.temp_setting = "25"
             setting.mode_setting = constants.AirconMode.FAN
-            setting.fan_speed_setting = constants.AirconFanSpeed.LOW
+            setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
             setting.power_setting = constants.AirconPower.ON
         else:
             setting.temp_setting = "25"
             setting.mode_setting = constants.AirconMode.HEATING
-            setting.fan_speed_setting = constants.AirconFanSpeed.LOW
+            setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
             setting.power_setting = constants.AirconPower.ON
 
     elif pmv <= 0:
         # pmvが0以下の場合の処理
         setting.temp_setting = "28"
         setting.mode_setting = constants.AirconMode.FAN
-        setting.fan_speed_setting = constants.AirconFanSpeed.LOW
+        setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= 0.2:
         # pmvが0.2以下の場合の処理
-        setting.temp_setting = "28"
+        setting.temp_setting = "27"
         setting.mode_setting = constants.AirconMode.FAN
-        setting.fan_speed_setting = constants.AirconFanSpeed.LOW
+        setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= 0.4:
         # pmvが0.4以下の場合の処理
         setting.temp_setting = "26"
         setting.mode_setting = constants.AirconMode.COOLING
-        setting.fan_speed_setting = constants.AirconFanSpeed.LOW
+        setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= 0.45:
         # pmvが0.45以下の場合の処理
         setting.temp_setting = "25.5"
         setting.mode_setting = constants.AirconMode.COOLING
-        setting.fan_speed_setting = constants.AirconFanSpeed.MEDIUM
+        setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= 0.5:
         # pmvが0.5以下の場合の処理
         setting.temp_setting = "25"
         setting.mode_setting = constants.AirconMode.COOLING
-        setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
+        setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
         setting.power_setting = constants.AirconPower.ON
     else:
         # pmvが0.5以上の場合の処理
         setting.temp_setting = "22"
         setting.mode_setting = constants.AirconMode.POWERFUL_COOLING
-        setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
+        setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
         setting.power_setting = constants.AirconPower.ON
 
     if setting.mode_setting == constants.AirconMode.FAN:
@@ -144,7 +144,7 @@ def set_aircon(
             # if now.hour < 8 or now.hour >= 18:
             setting.temp_setting = "27"
             setting.mode_setting = constants.AirconMode.DRY
-            setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
+            setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
             setting.power_setting = constants.AirconPower.ON
         
     # switchbot_api.aircon(setting.temp_setting, setting.mode_setting, setting.fan_speed_setting, setting.power_setting)
