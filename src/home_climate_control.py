@@ -114,19 +114,19 @@ def set_aircon(
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= 0.4:
         # pmvが0.4以下の場合の処理
-        setting.temp_setting = "28"
+        setting.temp_setting = "27"
         setting.mode_setting = constants.AirconMode.COOLING
         setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= 0.45:
         # pmvが0.45以下の場合の処理
-        setting.temp_setting = "27.5"
+        setting.temp_setting = "26.5"
         setting.mode_setting = constants.AirconMode.COOLING
         setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
         setting.power_setting = constants.AirconPower.ON
     elif pmv <= 0.5:
         # pmvが0.5以下の場合の処理
-        setting.temp_setting = "27"
+        setting.temp_setting = "26"
         setting.mode_setting = constants.AirconMode.COOLING
         setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
         setting.power_setting = constants.AirconPower.ON
@@ -296,7 +296,7 @@ def main():
             ac_settings_changed = True
 
     if ac_settings_changed:
-        logger.info(f"{aircon_setting.mode_setting.description}:{aircon_setting.fan_speed_setting.description}:{aircon_setting.power_setting.description}")
+        logger.info(f"{aircon_setting.mode_setting.description}:{aircon_setting.temp_setting}:{aircon_setting.fan_speed_setting.description}:{aircon_setting.power_setting.description}")
 
     # 操作時間外なら風量を0に設定して終了
     power, fan_speed = None, None
