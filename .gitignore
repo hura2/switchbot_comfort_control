@@ -163,3 +163,5 @@ src/util/g.py
 src/util/humidity_calculator.py
 src/switchbot_comfort_control.code-workspace
 .DS_Store
+.vscode/settings.json
+.gitignore
