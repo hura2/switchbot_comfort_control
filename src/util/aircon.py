@@ -82,7 +82,7 @@ class Aircon:
     def should_update_aircon_settings(last_setting_time):
         # 2時間以上経過している場合は更新しない
         return TimeUtil.get_current_time() - TimeUtil.parse_datetime_string(last_setting_time) > datetime.timedelta(
-            hours=2
+            hours=1
         )
 
     # エアコンの設定を変更

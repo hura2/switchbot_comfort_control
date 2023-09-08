@@ -86,9 +86,11 @@ def calculate_pmv(
         WINDOW_TO_WALL_RATIO,
         WALL_SURFACE_HEAT_TRANSFER_RESISTANCE,
     )
+    #壁、天井、床の内部表面温度を計算する
     ceiling_temp = calculate_interior_surface_temperature(
         roof_surface_temp, ceiling.temperature, CEILING_THERMAL_CONDUCTIVITY, CEILING_SURFACE_HEAT_TRANSFER_RESISTANCE
     )
+    #壁、天井、床の内部表面温度を計算する
     floor_temp = calculate_interior_surface_temperature(
         (floor.temperature + outdoor.temperature) * (1 - TEMP_DIFF_COEFFICIENT_UNDER_FLOOR),
         floor.temperature,
