@@ -31,7 +31,7 @@ class Aircon:
             setting.mode_setting = constants.AirconMode.HEATING
         elif pmv <= -0.2:
             # pmvが-0.2以下の場合の処理
-            setting.temp_setting = "25"
+            setting.temp_setting = "24"
             setting.mode_setting = constants.AirconMode.HEATING
         elif pmv <= -0.3:
             # pmvが-0.3以下の場合の処理
@@ -40,7 +40,7 @@ class Aircon:
                 setting.temp_setting = "25"
                 setting.mode_setting = constants.AirconMode.FAN
             else:
-                setting.temp_setting = "25"
+                setting.temp_setting = "24"
                 setting.mode_setting = constants.AirconMode.HEATING
 
         elif pmv <= 0:
