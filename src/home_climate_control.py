@@ -13,6 +13,15 @@ def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
     if outdoor_temperature >= 20 or 6 <= now.month <= 9:
         met = 1.0 if bedtime else 1.1
         icl = 0.6 if bedtime else 0.6
+        # たくさん活動する時間帯はmetを増やす
+        if datetime.time(11, 0) <= now.time() <= datetime.time(17, 0):
+            met += 0.25
+        # 食事する時間帯はmetを増やす
+        if datetime.time(12, 0) <= now.time() <= datetime.time(13, 0):
+            met += 0.2
+        # 食事する時間帯、入浴時間帯はmetを増やす
+        if datetime.time(19, 0) <= now.time() <= datetime.time(21, 0):
+            met += 0.3
     elif outdoor_temperature >= 15:
         met = 1.0 if bedtime else 1.1
         icl = 0.8 if bedtime else 0.7
@@ -22,16 +31,6 @@ def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
     else:
         met = 1.0 if bedtime else 1.0
         icl = 1.1 if bedtime else 0.9
-
-    # たくさん活動する時間帯はmetを増やす
-    if datetime.time(11, 0) <= now.time() <= datetime.time(17, 0):
-        met += 0.25
-    # 食事する時間帯はmetを増やす
-    if datetime.time(12, 0) <= now.time() <= datetime.time(13, 0):
-        met += 0.2
-    # 食事する時間帯、入浴時間帯はmetを増やす
-    if datetime.time(19, 0) <= now.time() <= datetime.time(21, 0):
-        met += 0.3
 
     return met, icl
 
