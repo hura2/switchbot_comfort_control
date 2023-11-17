@@ -1,5 +1,5 @@
 import datetime
-from common.data_types import AirconSetting
+from common.data_types import AirconSetting, PMVCalculation
 import common.constants as constants
 from util.time import TimeUtil
 from util.logger import logger
@@ -9,10 +9,10 @@ import api.switchbot_api as switchbot_api
 class Aircon:
     # エアコンの動作を設定する関数
     @staticmethod
-    def set_aircon(pmv: int, outdoor_temperature: float, absolute_humidity: float, humidity: float):
+    def set_aircon(pmvCalculation: PMVCalculation, outdoor_temperature: float, absolute_humidity: float, humidity: float):
         # Define aircon settings
         setting = AirconSetting("", "", constants.AirconFanSpeed.AUTO, constants.AirconPower.ON)
-
+        pmv = pmvCalculation.pmv
         if pmv <= -3:
             # pmvが-3以下の場合の処理
             setting.temp_setting = "25"
@@ -68,8 +68,19 @@ class Aircon:
             setting.temp_setting = "22"
             setting.mode_setting = constants.AirconMode.POWERFUL_COOLING
 
+        #冷房設定の場合
+        if (
+            setting.mode_setting == constants.AirconMode.POWERFUL_COOLING
+            or setting.mode_setting == constants.AirconMode.COOLING
+        ):
+            logger.info(pmvCalculation)
+            if pmvCalculation.mean_radiant_temperature > outdoor_temperature + 10:
+                # 平均放射温度より外気温が10度以上低い場合はそのうち涼しくなるので送風
+                setting.temp_setting = "28"
+                setting.mode_setting = constants.AirconMode.FAN
+
         if setting.mode_setting == constants.AirconMode.FAN:
-            #絶対湿度が12以上の場合は除湿運転
+            # 絶対湿度が12以上の場合は除湿運転
             if absolute_humidity > 12:
                 # #電気代が安い時間のみ
                 # if now.hour < 8 or now.hour >= 18:

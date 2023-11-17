@@ -73,7 +73,7 @@ def main():
 
     # PMVを元にエアコンの設定を更新
     aircon_setting = Aircon.set_aircon(
-        pmv.pmv, outdoor.temperature, absolute_humidity, (ceiling.humidity + floor.humidity) / 2
+        pmv, outdoor.temperature, absolute_humidity, (ceiling.humidity + floor.humidity) / 2
     )
     ac_settings_changed = Aircon.update_aircon_if_necessary(
         aircon_setting, current_aircon_setting, aircon_last_setting_time
