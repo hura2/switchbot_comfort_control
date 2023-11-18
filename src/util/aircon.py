@@ -13,28 +13,16 @@ class Aircon:
         # Define aircon settings
         setting = AirconSetting("", "", constants.AirconFanSpeed.AUTO, constants.AirconPower.ON)
         pmv = pmvCalculation.pmv
-        if pmv <= -3:
-            # pmvが-3以下の場合の処理
+        if pmv <= -0.4:
+            # pmvが-0.4以下の場合の処理
             setting.temp_setting = "25"
             setting.mode_setting = constants.AirconMode.POWERFUL_HEATING
-        elif pmv <= -2.5:
-            # pmvが-2.5以下の場合の処理
-            setting.temp_setting = "25"
-            setting.mode_setting = constants.AirconMode.POWERFUL_HEATING
-        elif pmv <= -2:
-            # pmvが-2以下の場合の処理
-            setting.temp_setting = "25"
-            setting.mode_setting = constants.AirconMode.HEATING
-        elif pmv <= -1.5:
-            # pmvが-1.5以下の場合の処理
-            setting.temp_setting = "25"
+        elif pmv <= -0.3:
+            # pmvが-0.3以下の場合の処理
+            setting.temp_setting = "24"
             setting.mode_setting = constants.AirconMode.HEATING
         elif pmv <= -0.2:
             # pmvが-0.2以下の場合の処理
-            setting.temp_setting = "24"
-            setting.mode_setting = constants.AirconMode.HEATING
-        elif pmv <= -0.3:
-            # pmvが-0.3以下の場合の処理
             if outdoor_temperature >= 25:
                 # 天気が25℃以上の場合はそのうち暖かくなるので送風
                 setting.temp_setting = "25"
