@@ -61,9 +61,8 @@ class Aircon:
             setting.mode_setting == constants.AirconMode.POWERFUL_COOLING
             or setting.mode_setting == constants.AirconMode.COOLING
         ):
-            logger.info(pmvCalculation)
-            if pmvCalculation.mean_radiant_temperature > outdoor_temperature + 10:
-                # 平均放射温度より外気温が10度以上低い場合はそのうち涼しくなるので送風
+            if pmvCalculation.mean_radiant_temperature > outdoor_temperature + 5:
+                # 平均放射温度より外気温が5度以上低い場合はそのうち涼しくなるので送風
                 setting.temp_setting = "28"
                 setting.mode_setting = constants.AirconMode.FAN
 
