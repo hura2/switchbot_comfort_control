@@ -27,7 +27,7 @@ def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
         icl = 0.9 if bedtime else 0.8
     elif outdoor_temperature >= 10:
         met = 1.0 if bedtime else 1.1
-        icl = 1.0 if bedtime else 0.9
+        icl = 1.2 if bedtime else 0.9
     else:
         met = 1.0 if bedtime else 1.0
         icl = 1.5 if bedtime else 1.2
