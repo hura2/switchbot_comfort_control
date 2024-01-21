@@ -44,8 +44,8 @@ def main():
 
     # サーキュレーターの起動・停止時間の設定
     now = TimeUtil.get_current_time()
-    on_time = TimeUtil.timezone().localize(datetime.datetime(now.year, now.month, now.day, 5, 0, 0, 0))
-    off_time = TimeUtil.timezone().localize(datetime.datetime(now.year, now.month, now.day, 23, 50, 0, 0))
+    on_time = TimeUtil.timezone().localize(datetime.datetime(now.year, now.month, now.day, 4, 0, 0, 0))
+    off_time = TimeUtil.timezone().localize(datetime.datetime(now.year, now.month, now.day, 22, 50, 0, 0))
     # 寝る時間かどうかを判断（起動時間内ならばFalse,それ以外はTrue）
     bedtime = bedtime = on_time > now or off_time < now
 
