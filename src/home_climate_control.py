@@ -31,13 +31,17 @@ def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
         # 8時からは電気代が高くなるので暖房を抑制
         if datetime.time(7, 40) <= now.time() <= datetime.time(11, 0):
             icl += 0.2
+        if datetime.time(17, 0) <= now.time() <= datetime.time(18, 0):
+            icl += 0.2
     else:
         met = 1.0 if bedtime else 1.0
         icl = 1.55 if bedtime else 1.1
         # 8時からは電気代が高くなるので暖房を抑制
         if datetime.time(7, 40) <= now.time() <= datetime.time(11, 0):
             icl += 0.2
-
+        if datetime.time(17, 0) <= now.time() <= datetime.time(18, 0):
+            icl += 0.2
+            
     return met, icl
 
 
