@@ -29,7 +29,7 @@ def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
 
         # Linear interpolation for icl between 9 and 15
         icl_daytime = max(1.1 - 0.03 * max(min(ot, 19) - 9, 0), 0.6)
-        icl_bedtime = max(1.5 - 0.06 * max(min(ot, 19) - 9, 0), 0.8)
+        icl_bedtime = max(1.6 - 0.06 * max(min(ot, 19) - 9, 0), 0.8)
 
         # Choose between daytime and bedtime icl based on the time of day
         icl = icl_bedtime if bedtime else icl_daytime
