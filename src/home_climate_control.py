@@ -10,7 +10,8 @@ import api.switchbot_api as switchbot_api
 
 def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
     now = TimeUtil.get_current_time()
-    if outdoor_temperature >= 20 or 6 <= now.month <= 9:
+    ot = outdoor_temperature
+    if ot >= 20 or 6 <= now.month <= 9:
         met = 1.0 if bedtime else 1.1
         icl = 0.6 if bedtime else 0.6
         # たくさん活動する時間帯はmetを増やす
@@ -22,23 +23,20 @@ def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
         # 食事する時間帯、入浴時間帯はmetを増やす
         if datetime.time(19, 0) <= now.time() <= datetime.time(21, 0):
             met += 0.3
-    elif outdoor_temperature >= 15:
-        met = 1.0 if bedtime else 1.1
-        icl = 0.9 if bedtime else 0.8
-    elif outdoor_temperature >= 10:
-        met = 1.0 if bedtime else 1.1
-        icl = 1.4 if bedtime else 1.05
-        # 8時からは電気代が高くなるので暖房を抑制
-        if datetime.time(7, 40) <= now.time() <= datetime.time(11, 0):
-            icl += 0.2
-        if datetime.time(17, 0) <= now.time() <= datetime.time(18, 0):
-            icl += 0.2
     else:
-        met = 1.0 if bedtime else 1.0
-        icl = 1.55 if bedtime else 1.15
+        met = 1.0 if bedtime else 1.1
+        # icl = 0.9 if bedtime else 0.8
+
+        # Linear interpolation for icl between 9 and 15
+        icl_daytime = max(1.15 - 0.03 * max(min(ot, 19) - 9, 0), 0.6)
+        icl_bedtime = max(1.5 - 0.06 * max(min(ot, 19) - 9, 0), 0.8)
+
+        # Choose between daytime and bedtime icl based on the time of day
+        icl = icl_bedtime if bedtime else icl_daytime
         # 8時からは電気代が高くなるので暖房を抑制
         if datetime.time(7, 40) <= now.time() <= datetime.time(11, 0):
             icl += 0.2
+        # 18時から電気代が安くなるのでちょっと我慢
         if datetime.time(17, 0) <= now.time() <= datetime.time(18, 0):
             icl += 0.2
             
