@@ -21,7 +21,7 @@ class Aircon:
             # pmvが-0.16以下の場合の処理
             setting.temp_setting = "23"
             setting.mode_setting = constants.AirconMode.HEATING
-        elif pmv <= -0.15:
+        elif pmv <= -0.10:
             # pmvが-0.15以下の場合の処理
             if outdoor_temperature >= 25:
                 # 天気が25℃以上の場合はそのうち暖かくなるので送風
