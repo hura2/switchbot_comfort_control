@@ -6,6 +6,7 @@ from util.time import TimeUtil
 import util.analytics as analytics
 import util.heat_comfort_calculator as heat_comfort_calculator
 import api.switchbot_api as switchbot_api
+import common.constants as constants
 
 
 def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
@@ -36,9 +37,9 @@ def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
         if (current_day != 5 and current_day != 6) and (datetime.time(7, 40) <= now.time() <= datetime.time(11, 0)):
             icl += 0.2
         # 18時から電気代が安くなるのでちょっと我慢
-        if (current_day != 5 and current_day != 6) and (datetime.time(17,0) <= now.time() <= datetime.time(18, 0)):
+        if (current_day != 5 and current_day != 6) and (datetime.time(17, 0) <= now.time() <= datetime.time(18, 0)):
             icl += 0.2
-            
+
     return met, icl
 
 
@@ -82,6 +83,11 @@ def main():
     aircon_setting = Aircon.set_aircon(
         pmv, outdoor.temperature, absolute_humidity, (ceiling.humidity + floor.humidity) / 2
     )
+
+    # 寝る時間の送風はLOWにする
+    if bedtime == True and aircon_setting.mode_setting.id == constants.AirconMode.FAN.id:
+        aircon_setting.fan_speed_setting = constants.AirconFanSpeed.LOW
+
     ac_settings_changed = Aircon.update_aircon_if_necessary(
         aircon_setting, current_aircon_setting, aircon_last_setting_time
     )
@@ -90,7 +96,7 @@ def main():
         LoggerUtil.log_aircon_setting(aircon_setting)
     else:
         LoggerUtil.log_aircon_setting(current_aircon_setting)
-        
+
     # 操作時間外なら風量を0に設定して終了
     power, fan_speed = None, None
     if bedtime:
