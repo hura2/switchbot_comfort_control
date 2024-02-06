@@ -3,7 +3,7 @@ import logging
 
 from common.data_types import AirconSetting, PMVCalculation, TemperatureHumidity
 
-formatter = "[%(levelname)-8s] %(asctime)s %(name)-12s %(message)s"
+formatter = "%(message)s"
 logging.basicConfig(level=logging.INFO, format=formatter)
 
 logger = logging.getLogger(__name__)
