@@ -72,6 +72,30 @@ def generate_sign(token: str, secret: str, nonce: str = "") -> tuple[str, str, s
     return (str(t), str(sign, "utf-8"), nonce)
 
 
+# def get_temperature_and_humidity(device_id: str) -> TemperatureHumidity:
+#     """
+#     指定したデバイスの温度と湿度を取得し、TemperatureHumidityオブジェクトを返します。
+
+#     Args:
+#         device_id (str): デバイスID
+
+#     Returns:
+#         TemperatureHumidity: 温度と湿度を格納したTemperatureHumidityオブジェクト
+#     """
+#     url = f"{API_BASE_URL}/v1.1/devices/{device_id}/status"
+#     try:
+#         with requests.Session() as session:
+#             response = session.get(url, headers=generate_swt_header())
+#             response.raise_for_status()
+#             data = response.json()
+#             temperature = data["body"]["temperature"]
+#             humidity = data["body"]["humidity"]
+#             return TemperatureHumidity(temperature, humidity)
+#     except requests.exceptions.RequestException as e:
+#         logger.error(e)
+
+
+
 def get_temperature_and_humidity(device_id: str) -> TemperatureHumidity:
     """
     指定したデバイスの温度と湿度を取得し、TemperatureHumidityオブジェクトを返します。
@@ -82,17 +106,26 @@ def get_temperature_and_humidity(device_id: str) -> TemperatureHumidity:
     Returns:
         TemperatureHumidity: 温度と湿度を格納したTemperatureHumidityオブジェクト
     """
+    retry_count = 3  # リトライの試行回数
+    retry_delay = 5  # リトライ間の遅延（秒）
+
     url = f"{API_BASE_URL}/v1.1/devices/{device_id}/status"
-    try:
-        with requests.Session() as session:
-            response = session.get(url, headers=generate_swt_header())
-            response.raise_for_status()
-            data = response.json()
-            temperature = data["body"]["temperature"]
-            humidity = data["body"]["humidity"]
-            return TemperatureHumidity(temperature, humidity)
-    except requests.exceptions.RequestException as e:
-        logger.error(e)
+    for _ in range(retry_count):
+        try:
+            with requests.Session() as session:
+                response = session.get(url, headers=generate_swt_header())
+                response.raise_for_status()
+                data = response.json()
+                temperature = data["body"]["temperature"]
+                humidity = data["body"]["humidity"]
+                return TemperatureHumidity(temperature, humidity)
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error occurred: {e}")
+            logger.info(f"Retrying in {retry_delay} seconds...")
+            time.sleep(retry_delay)
+    
+    # リトライ後も成功しない場合はエラーを発生させる
+    raise RuntimeError("Failed to retrieve temperature and humidity after multiple retries.")
 
 
 def post_command(
