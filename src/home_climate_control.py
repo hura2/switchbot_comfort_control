@@ -14,7 +14,7 @@ def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
     # 現在の曜日を取得
     current_day = now.weekday()  # 0:月曜, 1:火曜, ..., 6:日曜
     ot = outdoor_temperature
-    #if ot >= 20 or 6 <= now.month <= 9:
+    # 夏の時期は涼しい服装で固定
     if 6 <= now.month <= 9:
         met = 1.0 if bedtime else 1.1
         icl = 0.6 if bedtime else 0.6
@@ -31,7 +31,7 @@ def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
         met = 1.0 if bedtime else 1.1
 
         # 冬の時期は暖かい服装で固定
-        if (12 <= now.month or 2 >= now.month) and ot < 17:
+        if 12 <= now.month or 2 >= now.month:
             icl_daytime = 1.05
             icl_bedtime = 1.6
         else:

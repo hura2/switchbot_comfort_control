@@ -61,8 +61,8 @@ class Aircon:
             setting.mode_setting == constants.AirconMode.POWERFUL_COOLING
             or setting.mode_setting == constants.AirconMode.COOLING
         ):
-            if pmvCalculation.mean_radiant_temperature > outdoor_temperature + 5:
-                # 平均放射温度より外気温が5度以上低い場合はそのうち涼しくなるので送風
+            if pmvCalculation.mean_radiant_temperature > outdoor_temperature:
+                # 平均放射温度より外気温が低い場合はそのうち涼しくなるので送風
                 setting.temp_setting = "28"
                 setting.mode_setting = constants.AirconMode.FAN
 
@@ -80,7 +80,7 @@ class Aircon:
     # エアコンの設定を更新するかどうかを判断
     @staticmethod
     def should_update_aircon_settings(last_setting_time):
-        # 2時間以上経過している場合は更新しない
+        # 1時間以上経過している場合は更新しない
         return TimeUtil.get_current_time() - TimeUtil.parse_datetime_string(last_setting_time) > datetime.timedelta(
             hours=1
         )
@@ -98,13 +98,13 @@ class Aircon:
         last_setting_time: str,
     ):
         # エアコンの設定を最後に変更した時間と現在の時間を比較して、
-        # 2時間以上経過しているかどうかをチェックします。
+        # 1時間以上経過しているかどうかをチェックします。
         if Aircon.should_update_aircon_settings(last_setting_time):
-            # もし2時間以上経過していれば、新しい設定を適用します。
+            # もし1時間以上経過していれば、新しい設定を適用します。
             Aircon.update_aircon_settings(aircon_setting)
             return True
         else:
-            # もし2時間以内であれば、現在のエアコンのモードを確認します。
+            # もし1時間以内であれば、現在のエアコンのモードを確認します。
             if current_aircon_setting.mode_setting.id in [constants.AirconMode.COOLING.id, constants.AirconMode.DRY.id]:
                 # もし現在のモードが冷房モードまたは除湿モードの場合、
                 # 新しいモードと現在のモードが違うかどうかをチェックします。
