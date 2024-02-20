@@ -31,7 +31,7 @@ def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
         met = 1.0 if bedtime else 1.1
 
         # 冬の時期は暖かい服装で固定
-        if (12 <= now.month or 2 >= now.month) and ot < 20:
+        if (12 <= now.month or 2 >= now.month) and ot < 17:
             icl_daytime = 1.05
             icl_bedtime = 1.6
         else:
