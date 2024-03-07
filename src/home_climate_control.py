@@ -35,7 +35,7 @@ def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
             icl_daytime = 1.05
             icl_bedtime = 1.6
         else:
-            icl_daytime = max(1.05 - 0.03 * max(min(ot, 30) - 9, 0), 0.9)
+            icl_daytime = max(1.03 - 0.03 * max(min(ot, 30) - 9, 0), 0.9)
             icl_bedtime = max(1.6 - 0.06 * max(min(ot, 15) - 9, 0), 1.2)
 
         icl = icl_bedtime if bedtime else icl_daytime
