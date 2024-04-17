@@ -66,6 +66,16 @@ class Aircon:
                 setting.temp_setting = "28"
                 setting.mode_setting = constants.AirconMode.FAN
 
+        #暖房設定の場合
+        if (
+            setting.mode_setting == constants.AirconMode.POWERFUL_HEATING
+            or setting.mode_setting == constants.AirconMode.HEATING
+        ):
+            if pmvCalculation.mean_radiant_temperature - 5 < outdoor_temperature:
+                # 平均放射温度-5°より外気温が高い場合はそのうち暖かくなるので送風
+                setting.temp_setting = "28"
+                setting.mode_setting = constants.AirconMode.FAN
+                
         if setting.mode_setting == constants.AirconMode.FAN:
             # 絶対湿度が12以上の場合は除湿運転
             if absolute_humidity > 12:
