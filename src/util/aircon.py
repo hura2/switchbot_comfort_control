@@ -77,8 +77,8 @@ class Aircon:
                 setting.mode_setting = constants.AirconMode.FAN
                 
         if setting.mode_setting == constants.AirconMode.FAN:
-            # 絶対湿度が12以上の場合は除湿運転
-            if absolute_humidity > 12:
+            # 絶対湿度が13以上の場合は除湿運転
+            if absolute_humidity > 13:
                 # #電気代が安い時間のみ
                 # if now.hour < 8 or now.hour >= 18:
                 setting.temp_setting = "28"
