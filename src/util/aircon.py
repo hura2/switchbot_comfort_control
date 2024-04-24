@@ -115,14 +115,13 @@ class Aircon:
             return True
         else:
             # もし1時間以内であれば、現在のエアコンのモードを確認します。
-            if current_aircon_setting.mode_setting.id in [constants.AirconMode.COOLING.id, constants.AirconMode.DRY.id]:
-                # もし現在のモードが冷房モードまたは除湿モードの場合、
+            if current_aircon_setting.mode_setting.id in [constants.AirconMode.COOLING.id, constants.AirconMode.POWERFUL_COOLING.id]:
+                # もし現在のモードが冷房モードの場合、
                 # 新しいモードと現在のモードが違うかどうかをチェックします。
                 if current_aircon_setting.mode_setting.id != aircon_setting.mode_setting.id:
                     # 冷房系のモード内での変更の場合はそのまま設定変更します。
                     if aircon_setting.mode_setting.id in [
                         constants.AirconMode.COOLING.id,
-                        constants.AirconMode.DRY.id,
                         constants.AirconMode.POWERFUL_COOLING.id,
                     ]:
                         logger.info("冷房を継続しつつ、設定を変更します")
@@ -139,7 +138,7 @@ class Aircon:
                     Aircon.update_aircon_settings(aircon_setting)
                     return True
             else:
-                # 現在のモードが冷房モードまたは除湿モードでない場合、
+                # 現在のモードが冷房モードでない場合、
                 # 新しい設定を適用します。
                 Aircon.update_aircon_settings(aircon_setting)
                 return True
