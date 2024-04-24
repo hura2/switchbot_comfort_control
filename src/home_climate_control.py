@@ -34,18 +34,17 @@ def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
         if 12 <= now.month or 2 >= now.month:
             icl_daytime = 1.05
             icl_bedtime = 1.6
+            # 8時からは電気代が高くなるので暖房を抑制
+            if (current_day != 5 and current_day != 6) and (datetime.time(7, 40) <= now.time() <= datetime.time(11, 0)):
+                icl_daytime += 0.2
+            # 18時から電気代が安くなるのでちょっと我慢
+            if (current_day != 5 and current_day != 6) and (datetime.time(17, 0) <= now.time() <= datetime.time(18, 0)):
+                icl_daytime += 0.2
         else:
             icl_daytime = max(1.05 - 0.025 * max(min(ot, 40) - 12, 0), 0.6)
             icl_bedtime = max(1.6 - 0.06 * max(min(ot, 15) - 9, 0), 1.2)
 
         icl = icl_bedtime if bedtime else icl_daytime
-
-        # 8時からは電気代が高くなるので暖房を抑制
-        if (current_day != 5 and current_day != 6) and (datetime.time(7, 40) <= now.time() <= datetime.time(11, 0)):
-            icl += 0.2
-        # 18時から電気代が安くなるのでちょっと我慢
-        if (current_day != 5 and current_day != 6) and (datetime.time(17, 0) <= now.time() <= datetime.time(18, 0)):
-            icl += 0.2
 
     return met, icl
 
