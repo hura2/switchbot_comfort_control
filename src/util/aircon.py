@@ -83,6 +83,7 @@ class Aircon:
                 # if now.hour < 8 or now.hour >= 18:
                 setting.temp_setting = "28"
                 setting.mode_setting = constants.AirconMode.DRY
+                setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
           #  else:
            #     setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
         return setting
