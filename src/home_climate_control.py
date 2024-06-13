@@ -89,9 +89,9 @@ def main():
     aircon_setting = Aircon.set_aircon(
         pmv, outdoor.temperature, absolute_humidity, (ceiling.humidity + floor.humidity) / 2
     )
-    #除湿は電気代が安い時間のみ
-    if now.hour >= 8 and now.hour <= 18 and aircon_setting.mode_setting == constants.AirconMode.DRY:
-        aircon_setting.mode_setting = constants.AirconMode.FAN
+    ##除湿は電気代が安い時間のみ
+    #if now.hour >= 8 and now.hour <= 18 and aircon_setting.mode_setting == constants.AirconMode.DRY:
+        #aircon_setting.mode_setting = constants.AirconMode.FAN
 
     # 寝る時間の送風はLOWにする
     if bedtime == True and aircon_setting.mode_setting.id == constants.AirconMode.FAN.id:
