@@ -35,16 +35,16 @@ class Aircon:
             # pmvが-0.3から0の場合の処理
             setting.temp_setting = "28"
             setting.mode_setting = constants.AirconMode.FAN
-        elif pmv <= 0.2:
-            # pmvが0から0.2の場合の処理
+        elif pmv <= 0.15:
+            # pmvが0から0.15の場合の処理
             setting.temp_setting = "28"
             setting.mode_setting = constants.AirconMode.FAN
-        elif pmv <= 0.3:
-            # pmvが0.2から0.3の場合の処理
+        elif pmv <= 0.2:
+            # pmvが0.15から0.3の場合の処理
             setting.temp_setting = "26"
             setting.mode_setting = constants.AirconMode.COOLING
         elif pmv <= 0.35:
-            # pmvが0.3から0.35の場合の処理
+            # pmvが0.2から0.35の場合の処理
             setting.temp_setting = "25"
             setting.mode_setting = constants.AirconMode.COOLING
         elif pmv <= 0.4:
