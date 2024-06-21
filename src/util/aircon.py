@@ -81,7 +81,7 @@ class Aircon:
                 
         if setting.mode_setting == constants.AirconMode.FAN:
             # 絶対湿度が13以上の場合は除湿運転
-            if absolute_humidity > 18:
+            if absolute_humidity > 13:
                 setting.temp_setting = "28"
                 setting.mode_setting = constants.AirconMode.DRY
                 setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
