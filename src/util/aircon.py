@@ -74,7 +74,10 @@ class Aircon:
             setting.mode_setting == constants.AirconMode.POWERFUL_HEATING
             or setting.mode_setting == constants.AirconMode.HEATING
         ):
-            if pmvCalculation.mean_radiant_temperature - 5 < outdoor_temperature:
+            if (
+                pmvCalculation.mean_radiant_temperature - 5 < outdoor_temperature
+                and pmv > -0.3
+            ):
                 # 平均放射温度-5°より外気温が高い場合はそのうち暖かくなるので送風
                 setting.temp_setting = "28"
                 setting.mode_setting = constants.AirconMode.FAN
