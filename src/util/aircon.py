@@ -62,10 +62,10 @@ class Aircon:
             or setting.mode_setting == constants.AirconMode.COOLING
         ):
             if (
-                pmvCalculation.mean_radiant_temperature > outdoor_temperature
+                pmvCalculation.mean_radiant_temperature - 5 > outdoor_temperature
                 and pmv < 0.3
             ):
-                # 平均放射温度より外気温が低い場合はそのうち涼しくなるので送風
+                # 平均放射温度より外気温-5°が低い場合はそのうち涼しくなるので送風
                 setting.temp_setting = "28"
                 setting.mode_setting = constants.AirconMode.FAN
 
@@ -85,6 +85,7 @@ class Aircon:
         if setting.mode_setting == constants.AirconMode.FAN:
             # 絶対湿度が13以上の場合は除湿運転
             if absolute_humidity > 13:
+                logger.info("絶対湿度が13以上の場合は除湿運転")
                 setting.temp_setting = "28"
                 setting.mode_setting = constants.AirconMode.DRY
                 setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
