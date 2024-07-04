@@ -116,6 +116,7 @@ class Aircon:
         # 1時間以上経過しているかどうかをチェックします。
         if Aircon.should_update_aircon_settings(last_setting_time):
             # もし1時間以上経過していれば、新しい設定を適用します。
+            logger.info("1時間経過したので、設定を変更します")
             Aircon.update_aircon_settings(aircon_setting)
             return True
         else:
@@ -145,6 +146,7 @@ class Aircon:
             else:
                 # 現在のモードが冷房モードでない場合、
                 # 新しい設定を適用します。
+                logger.info("新しい設定に変更します")
                 Aircon.update_aircon_settings(aircon_setting)
                 return True
         # 設定を変更しない場合、Falseを返します。
