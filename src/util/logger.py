@@ -16,12 +16,13 @@ class LoggerUtil:
         floor: TemperatureHumidity,
         outdoor: TemperatureHumidity,
         absolute_humidity: float,
+        dew_point: float,
         now: datetime.datetime,
     ):
         logger.info(f"現在時刻:{now}")
         logger.info(f"天井:温度{ceiling.temperature}°, 湿度{ceiling.humidity}%")
         logger.info(f"床:温度{floor.temperature}°, 湿度{floor.humidity}%")
-        logger.info(f"外部:温度{outdoor.temperature}°, 湿度{outdoor.humidity}%")
+        logger.info(f"外部:温度{outdoor.temperature}°, 湿度{outdoor.humidity}%、露点温度{dew_point}°")
         logger.info(f"相対湿度{(ceiling.humidity + floor.humidity) / 2}°, 絶対湿度{absolute_humidity:.2f}g/㎥")
 
     @staticmethod

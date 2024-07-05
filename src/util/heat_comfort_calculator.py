@@ -4,6 +4,7 @@ from pythermalcomfort.models import pmv_ppd
 from pythermalcomfort.utilities import v_relative, clo_dynamic
 from util.logger import logger
 from util.time import TimeUtil
+import math
 
 # 壁、天井、床、窓の熱伝導率[W/(m K)]
 WALL_THERMAL_CONDUCTIVITY = 0.5
@@ -179,3 +180,23 @@ def calculate_absolute_humidity(temperature, relative_humidity):
     absolute_humidity = (217 * (relative_humidity / 100) * saturated_vapor_pressure) / temperature_kelvin
 
     return absolute_humidity
+
+    # 露点温度を計算する関数
+
+def calculate_dew_point(temperature_celsius: float, relative_humidity: float) -> float:
+    """
+    :param temperature_celsius: 気温（摂氏）
+    :param relative_humidity: 相対湿度（%）
+    :return: 露点温度（摂氏）
+    """
+    # 定数
+    a = 17.27
+    b = 237.7
+    
+    # 中間計算
+    alpha = ((a * temperature_celsius) / (b + temperature_celsius)) + math.log(relative_humidity / 100.0)
+    
+    # 露点温度の計算
+    dew_point = math.ceil(((b * alpha) / (a - alpha)) * 10) / 10
+
+    return dew_point

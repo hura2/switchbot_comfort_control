@@ -1,15 +1,22 @@
 import datetime
-from common.data_types import AirconSetting, PMVCalculation
+from common.data_types import AirconSetting, PMVCalculation, TemperatureHumidity
 import common.constants as constants
 from util.time import TimeUtil
 from util.logger import logger
 import api.switchbot_api as switchbot_api
+import util.heat_comfort_calculator as heat_comfort_calculator
 
 
 class Aircon:
     # エアコンの動作を設定する関数
     @staticmethod
-    def set_aircon(pmvCalculation: PMVCalculation, outdoor_temperature: float, absolute_humidity: float, humidity: float):
+    def set_aircon(
+        pmvCalculation: PMVCalculation,
+        outdoor_temperature: float,
+        absolute_humidity: float,
+        floor_temperature: float,
+        dew_point: float,
+    ):
         # Define aircon settings
         setting = AirconSetting("", "", constants.AirconFanSpeed.AUTO, constants.AirconPower.ON)
         pmv = pmvCalculation.pmv
@@ -56,32 +63,26 @@ class Aircon:
             setting.temp_setting = "22"
             setting.mode_setting = constants.AirconMode.POWERFUL_COOLING
 
-        #冷房設定の場合
+        # 冷房設定の場合
         if (
             setting.mode_setting == constants.AirconMode.POWERFUL_COOLING
             or setting.mode_setting == constants.AirconMode.COOLING
         ):
-            if (
-                pmvCalculation.mean_radiant_temperature - 5 > outdoor_temperature
-                and pmv < 0.3
-            ):
+            if pmvCalculation.mean_radiant_temperature - 5 > outdoor_temperature and pmv < 0.3:
                 # 平均放射温度より外気温-5°が低い場合はそのうち涼しくなるので送風
                 setting.temp_setting = "28"
                 setting.mode_setting = constants.AirconMode.FAN
 
-        #暖房設定の場合
+        # 暖房設定の場合
         if (
             setting.mode_setting == constants.AirconMode.POWERFUL_HEATING
             or setting.mode_setting == constants.AirconMode.HEATING
         ):
-            if (
-                pmvCalculation.mean_radiant_temperature - 5 < outdoor_temperature
-                and pmv > -0.3
-            ):
+            if pmvCalculation.mean_radiant_temperature - 5 < outdoor_temperature and pmv > -0.3:
                 # 平均放射温度-5°より外気温が高い場合はそのうち暖かくなるので送風
                 setting.temp_setting = "28"
                 setting.mode_setting = constants.AirconMode.FAN
-                
+
         if setting.mode_setting == constants.AirconMode.FAN:
             # 絶対湿度が13以上の場合は除湿運転
             if absolute_humidity > 13:
@@ -89,8 +90,15 @@ class Aircon:
                 setting.temp_setting = "28"
                 setting.mode_setting = constants.AirconMode.DRY
                 setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
-          #  else:
-           #     setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
+        #  else:
+        #     setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
+
+        # 室内温度が露点温度より低い場合は送風
+        if outdoor_temperature > 30 and floor_temperature < dew_point + 0.5:
+            logger.info("室内温度が露点温度より低い場合は送風")
+            setting.temp_setting = "28"
+            setting.mode_setting = constants.AirconMode.FAN
+
         return setting
 
     # エアコンの設定を更新するかどうかを判断
@@ -122,7 +130,10 @@ class Aircon:
             return True
         else:
             # もし1時間以内であれば、現在のエアコンのモードを確認します。
-            if current_aircon_setting.mode_setting.id in [constants.AirconMode.COOLING.id, constants.AirconMode.POWERFUL_COOLING.id]:
+            if current_aircon_setting.mode_setting.id in [
+                constants.AirconMode.COOLING.id,
+                constants.AirconMode.POWERFUL_COOLING.id,
+            ]:
                 # もし現在のモードが冷房モードの場合、
                 # 新しいモードと現在のモードが違うかどうかをチェックします。
                 if current_aircon_setting.mode_setting.id != aircon_setting.mode_setting.id:

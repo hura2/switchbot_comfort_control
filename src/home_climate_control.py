@@ -66,8 +66,10 @@ def main():
     absolute_humidity = heat_comfort_calculator.calculate_absolute_humidity(
         floor.temperature, (ceiling.humidity + floor.humidity) / 2
     )
+    dew_point = heat_comfort_calculator.calculate_dew_point(outdoor.temperature, outdoor.humidity)
+
     # ログに各種情報を出力
-    LoggerUtil.log_environment_data(ceiling, floor, outdoor, absolute_humidity, TimeUtil.get_current_time())
+    LoggerUtil.log_environment_data(ceiling, floor, outdoor, absolute_humidity, dew_point, TimeUtil.get_current_time())
     # METとICLの値を計算
     met, icl = calculate_met_icl(outdoor.temperature, bedtime)
 
@@ -87,7 +89,7 @@ def main():
 
     # PMVを元にエアコンの設定を更新
     aircon_setting = Aircon.set_aircon(
-        pmv, outdoor.temperature, absolute_humidity, (ceiling.humidity + floor.humidity) / 2
+        pmv, outdoor.temperature, absolute_humidity, floor.temperature, dew_point
     )
     ##除湿は電気代が安い時間のみ
     #if now.hour >= 8 and now.hour <= 18 and aircon_setting.mode_setting == constants.AirconMode.DRY:
