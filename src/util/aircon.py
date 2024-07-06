@@ -95,7 +95,7 @@ class Aircon:
 
         # 室内温度が露点温度より低い場合は送風
         if outdoor_temperature > 30 and floor_temperature < dew_point + 0.5:
-            logger.info("室内温度が露点温度より低い場合は送風")
+            logger.info("室内温度が露点温度に近い場合は送風")
             setting.temp_setting = "28"
             setting.mode_setting = constants.AirconMode.FAN
 
