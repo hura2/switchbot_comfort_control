@@ -96,7 +96,8 @@ def main():
         #aircon_setting.mode_setting = constants.AirconMode.FAN
 
     # 寝る時間の送風はLOWにする
-    if bedtime == True and aircon_setting.mode_setting.id == constants.AirconMode.FAN.id:
+    #if bedtime == True and aircon_setting.mode_setting.id == constants.AirconMode.FAN.id:
+    if aircon_setting.mode_setting.id == constants.AirconMode.FAN.id:
         aircon_setting.fan_speed_setting = constants.AirconFanSpeed.LOW
 
     ac_settings_changed = Aircon.update_aircon_if_necessary(
