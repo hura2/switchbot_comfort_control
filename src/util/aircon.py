@@ -35,6 +35,7 @@ class Aircon:
                 # 天気が25℃以上の場合はそのうち暖かくなるので送風
                 setting.temp_setting = "25"
                 setting.mode_setting = constants.AirconMode.FAN
+                setting.fan_speed_setting = constants.AirconFanSpeed.LOW
             else:
                 setting.temp_setting = "23"
                 setting.mode_setting = constants.AirconMode.HEATING
@@ -43,10 +44,12 @@ class Aircon:
             # pmvが-0.3から0の場合の処理
             setting.temp_setting = "28"
             setting.mode_setting = constants.AirconMode.FAN
+            setting.fan_speed_setting = constants.AirconFanSpeed.LOW
         elif pmv <= 0.10:
             # pmvが0から0.10の場合の処理
             setting.temp_setting = "28"
             setting.mode_setting = constants.AirconMode.FAN
+            setting.fan_speed_setting = constants.AirconFanSpeed.LOW
         elif pmv <= 0.15:
             # pmvが0.10から0.15の場合の処理
             setting.temp_setting = "26"
@@ -87,7 +90,7 @@ class Aircon:
         if setting.mode_setting == constants.AirconMode.FAN:
             # 絶対湿度が13以上の場合は除湿運転
             if absolute_humidity > 13:
-                logger.info("絶対湿度が13以上の場合は除湿運転")
+                logger.info("絶対湿度が13以上")
                 setting.temp_setting = "28"
                 setting.mode_setting = constants.AirconMode.DRY
                 setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
@@ -102,7 +105,7 @@ class Aircon:
 
         # 室内温度が露点温度より低い場合は送風
         if floor_temperature < dew_point:
-            logger.info("室内温度が露点温度に近い場合は送風")
+            logger.info("室内温度が露点温度より低い場合は送風")
             setting.temp_setting = "28"
             setting.mode_setting = constants.AirconMode.FAN
             setting.fan_speed_setting = constants.AirconFanSpeed.LOW
