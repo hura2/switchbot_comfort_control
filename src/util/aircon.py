@@ -76,6 +76,7 @@ class Aircon:
                 # 平均放射温度より外気温-5°が低い場合はそのうち涼しくなるので送風
                 setting.temp_setting = "28"
                 setting.mode_setting = constants.AirconMode.FAN
+                setting.fan_speed_setting = constants.AirconFanSpeed.LOW
 
         # 暖房設定の場合
         if (
@@ -86,6 +87,7 @@ class Aircon:
                 # 平均放射温度-5°より外気温が高い場合はそのうち暖かくなるので送風
                 setting.temp_setting = "28"
                 setting.mode_setting = constants.AirconMode.FAN
+                setting.fan_speed_setting = constants.AirconFanSpeed.LOW
 
         if setting.mode_setting == constants.AirconMode.FAN:
             # 絶対湿度が13以上の場合は除湿運転
