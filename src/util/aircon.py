@@ -104,7 +104,7 @@ class Aircon:
                     setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
 
         # 室内温度が露点温度より低い場合は送風
-        if floor_temperature < dew_point:
+        if floor_temperature < dew_point and ads(pmv) < 0.6:
             logger.info("室内温度が露点温度より低い場合は送風")
             setting.temp_setting = "28"
             setting.mode_setting = constants.AirconMode.FAN
