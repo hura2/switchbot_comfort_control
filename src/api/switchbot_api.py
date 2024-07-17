@@ -24,6 +24,7 @@ CIRCULATOR_DEVICE_ID = os.environ["SWITCHBOT_CIRCULATOR_DEVICE_ID"]
 CEILING_DEVICE_ID = os.environ["SWITCHBOT_CEILING_DEVICE_ID"]
 FLOOR_DEVICE_ID = os.environ["SWITCHBOT_FLOOR_DEVICE_ID"]
 OUTDOOR_DEVICE_ID = os.environ["SWITCHBOT_OUTDOOR_DEVICE_ID"]
+STUDY_DEVICE_ID = os.environ["SWITCHBOT_STUDY_DEVICE_ID"]
 AIR_CONDITIONER_DEVICE_ID = os.environ["SWITCHBOT_AIR_CONDITIONER_DEVICE_ID"]
 AIR_CONDITIONER_SUPPORT_DEVICE_ID = os.environ["SWITCHBOT_AIR_CONDITIONER_SUPPORT_DEVICE_ID"]
 
@@ -248,3 +249,12 @@ def get_outdoor_temperature() -> TemperatureHumidity:
     """
     return get_temperature_and_humidity(OUTDOOR_DEVICE_ID)
 
+
+def get_study_temperature() -> TemperatureHumidity:
+    """
+    書斎の温度と湿度を取得するします。
+
+    Returns:
+        TemperatureHumidity: 温度と湿度を表すオブジェクト
+    """
+    return get_temperature_and_humidity(STUDY_DEVICE_ID)

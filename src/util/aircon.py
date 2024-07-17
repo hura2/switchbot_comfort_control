@@ -12,12 +12,13 @@ class Aircon:
     @staticmethod
     def set_aircon(
         pmvCalculation: PMVCalculation,
+        floor_temperature: float,
+        study_temperature: float,
         outdoor_temperature: float,
         absolute_humidity: float,
-        floor_temperature: float,
         dew_point: float,
     ):
-        # Define aircon settings
+        # 初期値の設定
         setting = AirconSetting("", "", constants.AirconFanSpeed.AUTO, constants.AirconPower.ON)
         pmv = pmvCalculation.pmv
         if pmv <= -0.2:
@@ -90,15 +91,22 @@ class Aircon:
                 setting.temp_setting = "28"
                 setting.mode_setting = constants.AirconMode.DRY
                 setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
-        #  else:
-        #     setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
+            #床温度と書斎の温度の差が2度以上の場合は送風の風量を上げる
+            else:
+                if abs(floor_temperature - study_temperature) > 1:
+                    logger.info("床温度と書斎の温度の差が1度以上の場合は送風の風量をMEDIUM")
+                    setting.fan_speed_setting = constants.AirconFanSpeed.MEDIUM
+                elif abs(floor_temperature - study_temperature) > 2:
+                    logger.info("床温度と書斎の温度の差が2度以上の場合は送風の風量をHIGH")
+                    setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
 
         # 室内温度が露点温度より低い場合は送風
-        if outdoor_temperature > 30 and floor_temperature < dew_point + 0.5:
+        if floor_temperature < dew_point:
             logger.info("室内温度が露点温度に近い場合は送風")
             setting.temp_setting = "28"
             setting.mode_setting = constants.AirconMode.FAN
-
+            setting.fan_speed_setting = constants.AirconFanSpeed.LOW
+            setting.force_fan_below_dew_point = True
         return setting
 
     # エアコンの設定を更新するかどうかを判断
@@ -121,6 +129,11 @@ class Aircon:
         current_aircon_setting: AirconSetting,
         last_setting_time: str,
     ):
+        #露点温度に近い場合は強制的に送風
+        if aircon_setting.force_fan_below_dew_point:
+            Aircon.update_aircon_settings(aircon_setting)
+            return True
+
         # エアコンの設定を最後に変更した時間と現在の時間を比較して、
         # 1時間以上経過しているかどうかをチェックします。
         if Aircon.should_update_aircon_settings(last_setting_time):
@@ -158,7 +171,6 @@ class Aircon:
             else:
                 # 現在のモードが冷房モードでない場合、
                 # 新しい設定を適用します。
-                logger.info("新しい設定に変更します")
                 Aircon.update_aircon_settings(aircon_setting)
                 return True
         # 設定を変更しない場合、Falseを返します。

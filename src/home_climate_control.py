@@ -57,6 +57,7 @@ def main():
     # 温度と湿度の取得
     ceiling = switchbot_api.get_ceiling_temperature()
     floor = switchbot_api.get_floor_temperature()
+    study = switchbot_api.get_study_temperature()
     outdoor = switchbot_api.get_outdoor_temperature()
 
     # サーキュレーターの起動・停止時間の設定
@@ -66,13 +67,18 @@ def main():
     # 寝る時間かどうかを判断（起動時間内ならばFalse,それ以外はTrue）
     bedtime = bedtime = on_time > now or off_time < now
 
+    # 絶対湿度を計算
     absolute_humidity = heat_comfort_calculator.calculate_absolute_humidity(
         floor.temperature, (ceiling.humidity + floor.humidity) / 2
     )
+
+    # 露点温度を計算
     dew_point = heat_comfort_calculator.calculate_dew_point(outdoor.temperature, outdoor.humidity)
 
     # ログに各種情報を出力
-    LoggerUtil.log_environment_data(ceiling, floor, outdoor, absolute_humidity, dew_point, TimeUtil.get_current_time())
+    LoggerUtil.log_environment_data(
+        ceiling, floor, study, outdoor, absolute_humidity, dew_point, TimeUtil.get_current_time()
+    )
     # METとICLの値を計算
     met, icl = calculate_met_icl(outdoor.temperature, bedtime)
 
@@ -86,27 +92,25 @@ def main():
     current_fan_power, current_fan_speed = analytics.get_latest_circulator_setting()
     # 前回のエアコンの設定を取得
     current_aircon_setting, aircon_last_setting_time = analytics.get_latest_aircon_setting()
-    # 回のエアコン設定からの経過時間を計算
+    # 前回のエアコン設定からの経過時間を計算
     hours, minutes = TimeUtil.calculate_elapsed_time(aircon_last_setting_time)
     LoggerUtil.log_elapsed_time(hours, minutes)
 
     # PMVを元にエアコンの設定を更新
     aircon_setting = Aircon.set_aircon(
-        pmv, outdoor.temperature, absolute_humidity, floor.temperature, dew_point
+        pmv, floor.temperature, study.temperature, outdoor.temperature, absolute_humidity, dew_point
     )
-    ##除湿は電気代が安い時間のみ
-    #if now.hour >= 8 and now.hour <= 18 and aircon_setting.mode_setting == constants.AirconMode.DRY:
-        #aircon_setting.mode_setting = constants.AirconMode.FAN
 
     # 寝る時間の送風はLOWにする
-    #if bedtime == True and aircon_setting.mode_setting.id == constants.AirconMode.FAN.id:
-    if aircon_setting.mode_setting.id == constants.AirconMode.FAN.id:
+    if bedtime == True and aircon_setting.mode_setting.id == constants.AirconMode.FAN.id:
         aircon_setting.fan_speed_setting = constants.AirconFanSpeed.LOW
 
+    # エアコンの設定を更新
     ac_settings_changed = Aircon.update_aircon_if_necessary(
         aircon_setting, current_aircon_setting, aircon_last_setting_time
     )
 
+    # エアコンの設定をログに出力
     if ac_settings_changed:
         LoggerUtil.log_aircon_setting(aircon_setting)
     else:
