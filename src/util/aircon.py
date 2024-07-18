@@ -117,7 +117,7 @@ class Aircon:
                 logger.info("室内温度が露点温度より低い場合は送風")
                 setting.temp_setting = "28"
                 setting.mode_setting = constants.AirconMode.FAN
-                setting.fan_speed_setting = constants.AirconFanSpeed.LOW
+                setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
                 setting.force_fan_below_dew_point = True
 
             
