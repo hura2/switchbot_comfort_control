@@ -122,10 +122,15 @@ def main():
         power = Circulator.set_circulator(current_fan_power, current_fan_speed, 0)
         fan_speed = 0
     else:
-        # 温度差に基づいてサーキュレーターを設定
-        power, fan_speed = Circulator.set_fan_speed_based_on_temperature_diff(
-            outdoor.temperature, ceiling.temperature - floor.temperature, current_fan_power, current_fan_speed
-        )
+        # 露点温度以下の場合は送風で対応
+        if floor.temperature <  dew_point:
+            power = Circulator.set_circulator(current_fan_power, current_fan_speed, 3)
+            fan_speed = 3
+        else:
+            # 温度差に基づいてサーキュレーターを設定
+            power, fan_speed = Circulator.set_fan_speed_based_on_temperature_diff(
+                outdoor.temperature, ceiling.temperature - floor.temperature, current_fan_power, current_fan_speed
+            )
 
     # ログ出力
     LoggerUtil.log_circulator_setting(current_fan_power, current_fan_speed, fan_speed)
