@@ -109,7 +109,7 @@ class Aircon:
         if floor_temperature < dew_point:
             if pmv > 0.5:
                 logger.info("室内温度が露点温度より低いが、暑すぎる場合は冷房")
-                setting.temp_setting = "27"
+                setting.temp_setting = "26"
                 setting.mode_setting = constants.AirconMode.COOLING
                 setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
                 setting.force_fan_below_dew_point = True
