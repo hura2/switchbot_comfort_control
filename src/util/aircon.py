@@ -107,7 +107,7 @@ class Aircon:
 
         # 室内温度が露点温度より低い場合は送風
         if floor_temperature < dew_point:
-            if pmv > 0.5:
+            if pmv > 0.4:
                 logger.info("室内温度が露点温度より低いが、暑すぎる場合は冷房")
                 setting.temp_setting = "26"
                 setting.mode_setting = constants.AirconMode.COOLING
