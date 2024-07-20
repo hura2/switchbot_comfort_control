@@ -123,7 +123,7 @@ def main():
         fan_speed = 0
     else:
         # 露点温度以下の場合は送風で対応
-        if floor.temperature <  dew_point:
+        if floor.temperature <  dew_point - 1:
             power = Circulator.set_circulator(current_fan_power, current_fan_speed, 2)
             fan_speed = 2
         else:
