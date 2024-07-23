@@ -73,6 +73,7 @@ def calculate_pmv(
     outdoor: TemperatureHumidity,
     met: float,
     icl: float,
+    wind_speed: float = 0.15,
 ) -> PMVCalculation:
     # 屋根の表面温度を取得
     roof_surface_temp = calculate_roof_surface_temperature(outdoor.temperature)
@@ -104,7 +105,7 @@ def calculate_pmv(
 
     # 室温と風速、湿度を定義
     dry_bulb_temp = floor.temperature
-    wind_speed = 0.2
+    # wind_speed = 0.2
     humidity = (ceiling.humidity + floor.humidity) / 2
 
     # 相対風速と動的な衣服の断熱性を計算
@@ -144,7 +145,7 @@ def calculate_interior_surface_temperature(
 ):
     """壁、天井、床の内部表面温度を計算する"""
     thermal_resistance = 1 / thermal_conductivity  # 熱抵抗値[m2 K/W]
-    logger.info("熱抵抗値 = {:.2f} [m2 K/W]".format(thermal_resistance))
+    # logger.info("熱抵抗値 = {:.2f} [m2 K/W]".format(thermal_resistance))
     return indoor_temperature - (
         (surface_heat_transfer_resistance * (indoor_temperature - outdoor_temperature)) / thermal_resistance
     )
