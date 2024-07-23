@@ -104,7 +104,7 @@ def calculate_pmv(
 
     # 室温と風速、湿度を定義
     dry_bulb_temp = floor.temperature
-    wind_speed = 2
+    wind_speed = 1
     humidity = (ceiling.humidity + floor.humidity) / 2
 
     # 相対風速と動的な衣服の断熱性を計算
