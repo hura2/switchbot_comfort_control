@@ -127,10 +127,7 @@ def main():
     )
 
     # エアコンの設定をログに出力
-    if ac_settings_changed:
-        LoggerUtil.log_aircon_setting(aircon_setting)
-    else:
-        LoggerUtil.log_aircon_setting(current_aircon_setting)
+    LoggerUtil.log_aircon_setting(aircon_setting)
 
     # 操作時間外なら風量を0に設定して終了
     power, fan_speed = None, None
@@ -157,6 +154,8 @@ def main():
     analytics.insert_pmv(pmv.pmv, pmv.met, pmv.clo, pmv.air)
     if ac_settings_changed:
         analytics.insert_aircon_setting(aircon_setting)
+    else:
+        analytics.insert_aircon_setting(aircon_setting, aircon_last_setting_time)
     analytics.insert_circulator_setting(fan_speed, power)
 
     return True

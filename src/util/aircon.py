@@ -172,14 +172,14 @@ class Aircon:
                     ]:
                         logger.info("冷房を継続しつつ、設定を変更します")
                         Aircon.update_aircon_settings(aircon_setting)
-                        return True
+                        return False
                     else:
                         logger.info("冷房を継続しつつ、最弱の設定にします")
                         aircon_setting.temp_setting = "27"
                         aircon_setting.mode_setting = constants.AirconMode.COOLING
                         aircon_setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
                         Aircon.update_aircon_settings(aircon_setting)
-                        return True
+                        return False
                 # モードが同じ場合でも、温度、ファン速度、電源のいずれかが異なる場合、
                 # 設定を更新します。
                 if current_aircon_setting.mode_setting.id == aircon_setting.mode_setting.id and (
@@ -189,7 +189,7 @@ class Aircon:
                 ):
                     logger.info("現在のモードを継続しつつ、設定を変更します")
                     Aircon.update_aircon_settings(aircon_setting)
-                    return True
+                    return False
             else:
                 # 現在のモードが冷房モードでない場合、
                 # 新しい設定を適用します。

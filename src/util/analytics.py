@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Optional, Tuple
 import datetime
 from common.data_types import AirconSetting, TemperatureHumidity
 import common.constants as constants
@@ -97,7 +97,7 @@ def insert_pmv(pmv: float, met: float, clo: float, air: float):
 
 
 # エアコン設定情報をデータベースに挿入
-def insert_aircon_setting(aircon_setting: AirconSetting):
+def insert_aircon_setting(aircon_setting: AirconSetting, current_time: Optional[datetime.datetime] = None):
     """
     エアコン設定をデータベースに挿入します。
 
@@ -108,7 +108,9 @@ def insert_aircon_setting(aircon_setting: AirconSetting):
         APIResponse: 挿入結果の情報が含まれる。
     """
     supabase = SupabaseClient.get_supabase()
-    current_time = TimeUtil.get_current_time().isoformat()
+    #current_timeの設定がNoneの場合は現在の日時を設定
+    if current_time is None:
+        current_time = TimeUtil.get_current_time().isoformat()
     
     data = {
         "temperature": aircon_setting.temp_setting,
