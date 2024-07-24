@@ -87,11 +87,16 @@ def main():
 
     #夏の間
     circulator_on = False
+    circulator_on_spped = 0
     if 6 <= now.month <= 9:
+        circulator_on = True
         #pmvが0以上か、湿度が13以上の場合はサーキュレーターを起動
         if pmv.pmv >= 0 or absolute_humidity >= 13:
             #サーキュレーターを稼働する
-            circulator_on = True
+            circulator_on_spped = 2            
+        else:
+            #サーキュレーターを停止する
+            circulator_on_spped = 0
 
     # 風量を増やしてPMV値を再計算
     pmv = heat_comfort_calculator.calculate_pmv(ceiling, floor, outdoor, met, icl, wind_speed=0.2)
@@ -135,8 +140,8 @@ def main():
     else:
         # 送風で節電
         if circulator_on:
-            power = Circulator.set_circulator(current_fan_power, current_fan_speed, 2)
-            fan_speed = 2
+            power = Circulator.set_circulator(current_fan_power, current_fan_speed, circulator_on_spped)
+            fan_speed = circulator_on_spped
         else:
             # 温度差に基づいてサーキュレーターを設定
             power, fan_speed = Circulator.set_fan_speed_based_on_temperature_diff(
