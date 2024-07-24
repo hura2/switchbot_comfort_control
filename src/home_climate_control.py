@@ -99,7 +99,8 @@ def main():
             circulator_on_spped = 0
 
     # 風量を増やしてPMV値を再計算
-    pmv = heat_comfort_calculator.calculate_pmv(ceiling, floor, outdoor, met, icl, wind_speed=0.2)
+    if circulator_on:
+        pmv = heat_comfort_calculator.calculate_pmv(ceiling, floor, outdoor, met, icl, wind_speed=0.3)
    
     # 結果をログに出力
     LoggerUtil.log_pmv_results(pmv, met, icl)
