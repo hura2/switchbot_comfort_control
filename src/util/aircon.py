@@ -90,9 +90,9 @@ class Aircon:
                 setting.fan_speed_setting = constants.AirconFanSpeed.LOW
 
         if setting.mode_setting == constants.AirconMode.FAN:
-            # 絶対湿度が13以上の場合は除湿運転
-            if absolute_humidity > 13:
-                logger.info("絶対湿度が13以上")
+            # 絶対湿度が12以上の場合は除湿運転
+            if absolute_humidity > 12:
+                logger.info("絶対湿度が12以上")
                 setting.temp_setting = "28"
                 setting.mode_setting = constants.AirconMode.DRY
                 setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
