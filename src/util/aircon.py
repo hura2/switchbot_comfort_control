@@ -125,9 +125,9 @@ class Aircon:
     # エアコンの設定を更新するかどうかを判断
     @staticmethod
     def should_update_aircon_settings(last_setting_time):
-        # 2時間以上経過している場合は更新しない
+        # 1時間以上経過している場合は更新しない
         return TimeUtil.get_current_time() - TimeUtil.parse_datetime_string(last_setting_time) > datetime.timedelta(
-            hours=2
+            hours=1
         )
 
     # エアコンの設定を変更
@@ -174,7 +174,7 @@ class Aircon:
                     else:
                         logger.info("冷房を継続しつつ、最弱の設定にします")
                         aircon_setting.temp_setting = "26"
-                        aircon_setting.mode_setting = constants.AirconMode.FAN
+                        aircon_setting.mode_setting = constants.AirconMode.COOLING
                         #aircon_setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
                         Aircon.update_aircon_settings(aircon_setting)
                         return False
