@@ -173,7 +173,7 @@ class Aircon:
                         return False
                     else:
                         logger.info("冷房を継続しつつ、最弱の設定にします")
-                        aircon_setting.temp_setting = "26"
+                        aircon_setting.temp_setting = "27"
                         aircon_setting.mode_setting = constants.AirconMode.COOLING
                         #aircon_setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
                         Aircon.update_aircon_settings(aircon_setting)
