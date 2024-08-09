@@ -54,22 +54,22 @@ class Aircon:
             # pmvが0.10から0.15の場合の処理
             setting.temp_setting = "26"
             setting.mode_setting = constants.AirconMode.COOLING
-            setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
+            #setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
         elif pmv <= 0.18:
             # pmvが0.15から0.18の場合の処理
             setting.temp_setting = "25"
             setting.mode_setting = constants.AirconMode.COOLING
-            setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
+            #setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
         elif pmv <= 0.2:
             # pmvが0.18から0.2の場合の処理
             setting.temp_setting = "24"
             setting.mode_setting = constants.AirconMode.COOLING
-            setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
+            #setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
         else:
             # pmvが0.2以上の場合の処理
             setting.temp_setting = "22"
             setting.mode_setting = constants.AirconMode.COOLING
-            setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
+            #setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
          #   setting.mode_setting = constants.AirconMode.POWERFUL_COOLING
 
         # 冷房設定の場合
@@ -180,7 +180,7 @@ class Aircon:
                         logger.info("冷房を継続しつつ、最弱の設定にします")
                         aircon_setting.temp_setting = "27"
                         aircon_setting.mode_setting = constants.AirconMode.COOLING
-                        aircon_setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
+                        #aircon_setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
                         #aircon_setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
                         Aircon.update_aircon_settings(aircon_setting)
                         return False
