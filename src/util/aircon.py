@@ -68,8 +68,8 @@ class Aircon:
         else:
             # pmvが0.2以上の場合の処理
             setting.temp_setting = "22"
-            #setting.mode_setting = constants.AirconMode.POWERFUL_COOLING
-            setting.mode_setting = constants.AirconMode.COOLING
+            setting.mode_setting = constants.AirconMode.POWERFUL_COOLING
+            #setting.mode_setting = constants.AirconMode.COOLING
 
         # 冷房設定の場合
         if (
@@ -131,7 +131,7 @@ class Aircon:
     def should_update_aircon_settings(last_setting_time):
         # 1時間以上経過している場合は更新しない
         return TimeUtil.get_current_time() - TimeUtil.parse_datetime_string(last_setting_time) > datetime.timedelta(
-            hours=1
+            hours=24
         )
 
     # エアコンの設定を変更
