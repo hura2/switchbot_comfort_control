@@ -198,5 +198,8 @@ class Aircon:
                 # 新しい設定を適用します。
                 Aircon.update_aircon_settings(aircon_setting)
                 return True
+        
         # 設定を変更しない場合、Falseを返します。
+        logger.info("false")
+        Aircon.update_aircon_settings(aircon_setting)
         return False
