@@ -101,11 +101,11 @@ class Aircon:
                 setting.mode_setting = constants.AirconMode.DRY
                 setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
 
-        #床温度と書斎の温度の差が2度以上の場合は風量を上げる
-        diff = abs(floor_temperature - study_temperature)
-        if diff > 1:
-            logger.info("床温度と書斎の温度の差が1度以上の場合は風量をHIGH")
-            setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
+        # #床温度と書斎の温度の差が2度以上の場合は風量を上げる
+        # diff = abs(floor_temperature - study_temperature)
+        # if diff > 1:
+        #     logger.info("床温度と書斎の温度の差が1度以上の場合は風量をHIGH")
+        #     setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
                     
         # 室内温度が露点温度より低い場合は送風
         if floor_temperature < dew_point - 1:
