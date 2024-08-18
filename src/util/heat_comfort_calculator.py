@@ -71,6 +71,7 @@ def calculate_pmv(
     ceiling: TemperatureHumidity,
     floor: TemperatureHumidity,
     outdoor: TemperatureHumidity,
+    study: TemperatureHumidity,
     met: float,
     icl: float,
     wind_speed: float = 0.15,
@@ -104,7 +105,7 @@ def calculate_pmv(
     mean_radiant_temp = (wall_temp + ceiling_temp + floor_temp) / 3
 
     # 室温と風速、湿度を定義
-    dry_bulb_temp = floor.temperature
+    dry_bulb_temp = (floor.temperature + study.temperature) / 2 
     # wind_speed = 0.2
     humidity = (ceiling.humidity + floor.humidity) / 2
 

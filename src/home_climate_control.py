@@ -83,25 +83,25 @@ def main():
     met, icl = calculate_met_icl(outdoor.temperature, bedtime)
 
     # PMV値を計算
-    pmv = heat_comfort_calculator.calculate_pmv(ceiling, floor, outdoor, met, icl)
+    pmv = heat_comfort_calculator.calculate_pmv(ceiling, floor, outdoor, study, met, icl)
 
-    #夏の間
+    # 夏の間
     circulator_on = False
     circulator_on_spped = 0
     if 6 <= now.month <= 9:
         circulator_on = True
-        #pmvが0以上か、湿度が13以上の場合はサーキュレーターを起動
+        # pmvが0以上か、湿度が13以上の場合はサーキュレーターを起動
         if pmv.pmv >= 0 or absolute_humidity >= 13:
-            #サーキュレーターを稼働する
-            circulator_on_spped = 2            
+            # サーキュレーターを稼働する
+            circulator_on_spped = 2
         else:
-            #サーキュレーターを停止する
+            # サーキュレーターを停止する
             circulator_on_spped = 0
 
     # 風量を増やしてPMV値を再計算
     if circulator_on:
-        pmv = heat_comfort_calculator.calculate_pmv(ceiling, floor, outdoor, met, icl, wind_speed=0.3)
-   
+        pmv = heat_comfort_calculator.calculate_pmv(ceiling, floor, outdoor, study, met, icl, wind_speed=0.3)
+
     # 結果をログに出力
     LoggerUtil.log_pmv_results(pmv, met, icl)
 
