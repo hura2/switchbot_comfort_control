@@ -129,9 +129,9 @@ class Aircon:
     # エアコンの設定を更新するかどうかを判断
     @staticmethod
     def should_update_aircon_settings(last_setting_time):
-        # 1時間以上経過している場合は更新しない
+        # 3時間以上経過している場合は更新しない
         return TimeUtil.get_current_time() - TimeUtil.parse_datetime_string(last_setting_time) > datetime.timedelta(
-            hours=6
+            hours=3
         )
 
     # エアコンの設定を変更
@@ -154,8 +154,8 @@ class Aircon:
         # エアコンの設定を最後に変更した時間と現在の時間を比較して、
         # 1時間以上経過しているかどうかをチェックします。
         if Aircon.should_update_aircon_settings(last_setting_time):
-            # もし1時間以上経過していれば、新しい設定を適用します。
-            logger.info("1時間経過したので、設定を変更します")
+            # もし3時間以上経過していれば、新しい設定を適用します。
+            logger.info("3時間経過したので、設定を変更します")
             Aircon.update_aircon_settings(aircon_setting)
             return True
         else:
