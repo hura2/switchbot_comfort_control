@@ -9,13 +9,13 @@ import api.switchbot_api as switchbot_api
 import common.constants as constants
 
 
-def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
+def calculate_met_icl(outdoor_temperature: float, max_temp: int, bedtime: bool):
     now = TimeUtil.get_current_time()
     # 現在の曜日を取得
     current_day = now.weekday()  # 0:月曜, 1:火曜, ..., 6:日曜
     ot = outdoor_temperature
-    # 夏の時期は涼しい服装で固定
-    if 6 <= now.month <= 10:
+    # 最高気温が25度以上は涼しい服装
+    if max_temp >= 25:
         met = 1.0 if bedtime else 1.1
         icl = 0.8 if bedtime else 0.6
         # たくさん活動する時間帯はmetを増やす
@@ -33,8 +33,8 @@ def calculate_met_icl(outdoor_temperature: float, bedtime: bool):
     else:
         met = 1.0 if bedtime else 1.1
 
-        # 冬の時期は暖かい服装で固定
-        if 12 <= now.month or 2 >= now.month:
+        # 最高気温が15度以下は暖かい服装
+        if max_temp <= 15:
             icl_daytime = 1.05
             icl_bedtime = 1.6
             # 8時からは電気代が高くなるので暖房を抑制
@@ -60,6 +60,9 @@ def main():
     study = switchbot_api.get_study_temperature()
     outdoor = switchbot_api.get_outdoor_temperature()
 
+    # 天気予報を取得
+    max_temp = analytics.get_or_insert_max_temperature()
+
     # サーキュレーターの起動・停止時間の設定
     now = TimeUtil.get_current_time()
     on_time = TimeUtil.timezone().localize(datetime.datetime(now.year, now.month, now.day, 5, 0, 0, 0))
@@ -77,10 +80,10 @@ def main():
 
     # ログに各種情報を出力
     LoggerUtil.log_environment_data(
-        ceiling, floor, study, outdoor, absolute_humidity, dew_point, TimeUtil.get_current_time()
+        ceiling, floor, study, outdoor, absolute_humidity, dew_point, max_temp, TimeUtil.get_current_time()
     )
     # METとICLの値を計算
-    met, icl = calculate_met_icl(outdoor.temperature, bedtime)
+    met, icl = calculate_met_icl(outdoor.temperature, max_temp, bedtime)
 
     # PMV値を計算
     pmv = heat_comfort_calculator.calculate_pmv(ceiling, floor, outdoor, study, met, icl)

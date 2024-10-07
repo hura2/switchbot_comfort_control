@@ -18,9 +18,11 @@ class LoggerUtil:
         outdoor: TemperatureHumidity,
         absolute_humidity: float,
         dew_point: float,
+        max_temp: int,
         now: datetime.datetime,
     ):
         logger.info(f"現在時刻:{now}")
+        logger.info(f"最高気温{max_temp}°")
         logger.info(f"天井:温度{ceiling.temperature}°, 湿度{ceiling.humidity}%")
         logger.info(f"床:温度{floor.temperature}°, 湿度{floor.humidity}%")
         logger.info(f"書斎:温度{study.temperature}°, 湿度{study.humidity}%, リビングとの温度差{abs(floor.temperature - study.temperature):.2f}°")
