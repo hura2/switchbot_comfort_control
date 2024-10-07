@@ -1,9 +1,11 @@
 from typing import Optional, Tuple
 import datetime
+from api.jma_forecast import WeatherData
 from common.data_types import AirconSetting, TemperatureHumidity
 import common.constants as constants
 from util.supabase_client import SupabaseClient
 from util.time import TimeUtil
+
 
 # 温度情報をデータベースに挿入
 def insert_temperature(location_id: int, temperature: float, created_at: datetime):
@@ -66,7 +68,14 @@ def insert_surface_temperature(wall_temp: float, ceiling_temp: float, floor_temp
         SupabaseClient.get_supabase()
         .from_("surface_temperatures")
         .insert(
-            [{"wall": wall_temp, "ceiling": ceiling_temp, "floor": floor_temp, "created_at": TimeUtil.get_current_time().isoformat()}]
+            [
+                {
+                    "wall": wall_temp,
+                    "ceiling": ceiling_temp,
+                    "floor": floor_temp,
+                    "created_at": TimeUtil.get_current_time().isoformat(),
+                }
+            ]
         )
         .execute()
     )
@@ -90,7 +99,9 @@ def insert_pmv(pmv: float, met: float, clo: float, air: float):
     result = (
         SupabaseClient.get_supabase()
         .from_("pmvs")
-        .insert([{"pmv": pmv, "met": met, "clo": clo, "air": air, "created_at": TimeUtil.get_current_time().isoformat()}])
+        .insert(
+            [{"pmv": pmv, "met": met, "clo": clo, "air": air, "created_at": TimeUtil.get_current_time().isoformat()}]
+        )
         .execute()
     )
     return result
@@ -108,10 +119,10 @@ def insert_aircon_setting(aircon_setting: AirconSetting, current_time: Optional[
         APIResponse: 挿入結果の情報が含まれる。
     """
     supabase = SupabaseClient.get_supabase()
-    #current_timeの設定がNoneの場合は現在の日時を設定
+    # current_timeの設定がNoneの場合は現在の日時を設定
     if current_time is None:
         current_time = TimeUtil.get_current_time().isoformat()
-    
+
     data = {
         "temperature": aircon_setting.temp_setting,
         "mode": aircon_setting.mode_setting.id,
@@ -119,7 +130,7 @@ def insert_aircon_setting(aircon_setting: AirconSetting, current_time: Optional[
         "power": aircon_setting.power_setting.id,
         "created_at": current_time,
     }
-    
+
     return supabase.from_("aircon_settings").insert([data]).execute()
 
 
@@ -150,11 +161,7 @@ def get_latest_aircon_setting() -> Tuple[AirconSetting, datetime.datetime]:
     return aircon_setting, created_at
 
 
-def insert_temperature_humidity(
-    ceiling: TemperatureHumidity,
-    floor: TemperatureHumidity,
-    outdoor: TemperatureHumidity
-):
+def insert_temperature_humidity(ceiling: TemperatureHumidity, floor: TemperatureHumidity, outdoor: TemperatureHumidity):
     """
     天井、床、外部の温度と湿度データをデータベースに挿入します。
 
@@ -210,3 +217,78 @@ def get_latest_circulator_setting() -> Tuple[str, str]:
         .execute()
     )
     return data.data[0]["power"], data.data[0]["fan_speed"]
+
+
+# 日毎の最高気温をデータベースに挿入
+def insert_max_temperature(max_temperature: float):
+    """
+    日毎の最高気温をデータベースに挿入します。
+
+    Args:
+        recorded_date (str): 温度が記録された日付（YYYY-MM-DD形式）
+        max_temperature (float): 最高気温（摂氏度）
+
+    Returns:
+        APIResponse: 挿入結果の情報が含まれる。
+    """
+    result = (
+        SupabaseClient.get_supabase()
+        .from_("daily_max_temperatures")
+        .insert(
+            [
+                {
+                    "recorded_date": TimeUtil.get_current_time().date().isoformat(),
+                    "max_temperature": max_temperature,
+                    "created_at": TimeUtil.get_current_time().isoformat(),
+                }
+            ]
+        )
+        .execute()
+    )
+    return result
+
+
+# 指定した日付の最高気温を取得
+def get_max_temperature_by_date(recorded_date: str) -> Optional[Tuple[str, float]]:
+    """
+    指定した日付の最高気温を取得します。
+
+    Args:
+        recorded_date (str): 温度を取得したい日付（YYYY-MM-DD形式）
+
+    Returns:
+        Optional[Tuple[str, float]]: 記録日付と最高気温。データがない場合は None。
+    """
+    data = (
+        SupabaseClient.get_supabase()
+        .table("daily_max_temperatures")
+        .select("recorded_date, max_temperature")
+        .eq("recorded_date", recorded_date)
+        .execute()
+    )
+
+    if data.data:
+        return data.data[0]["recorded_date"], data.data[0]["max_temperature"]
+    return None
+
+def get_or_insert_max_temperature() -> float:
+    """
+    現在の日付の最高気温を取得し、存在しない場合は新たに挿入します。
+
+    Returns:
+        float: 最高気温の値
+    """
+    # 現在の日付を取得
+    recorded_date = TimeUtil.get_current_time().date().isoformat()
+    
+    # 現在の日付の最高気温を取得
+    result = get_max_temperature_by_date(recorded_date)
+
+    # 取得できなかった場合は挿入
+    if result is None:
+        max_temperature = WeatherData.get_max_temperature()
+        insert_max_temperature(max_temperature)
+        return max_temperature
+
+    # 取得できた場合は、その値を返す
+    return result[1]  # 最高気温の値を返す
