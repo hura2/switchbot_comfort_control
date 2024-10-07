@@ -18,8 +18,8 @@ jobs:
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
-            
+          python-version: "3.x"
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -39,5 +39,7 @@ jobs:
           SWITCHBOT_BASE_URL: ${{ secrets.SWITCHBOT_BASE_URL }}
           SUPABASE_PROJECT_URL: ${{ secrets.SUPABASE_PROJECT_URL }}
           SUPABASE_API_KEY: ${{ secrets.SUPABASE_API_KEY }}
+          JMA_AREA_NAME: ${{ secrets.JMA_AREA_NAME }}
+          JMA_AREA_CODE: ${{ secrets.JMA_AREA_CODE }}
         run: |
           python src/home_climate_control.py
