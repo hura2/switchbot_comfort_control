@@ -10,8 +10,8 @@ from typing import Optional
 load_dotenv(".env")
 
 # 環境変数からエリア名とコードを取得
-AREA_NAME = os.environ["AREA_NAME"]
-AREA_CODE = os.environ["AREA_CODE"]
+AREA_NAME = os.environ["JMA_AREA_NAME"]
+AREA_CODE = os.environ["JMA_AREA_CODE"]
 
 class WeatherData:
     @staticmethod
