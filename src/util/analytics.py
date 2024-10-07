@@ -286,7 +286,7 @@ def get_or_insert_max_temperature() -> float:
 
     # 取得できなかった場合は挿入
     if result is None:
-        max_temperature = WeatherData.get_max_temperature()
+        max_temperature = WeatherData.get_max_temperature_by_date(recorded_date)
         insert_max_temperature(max_temperature)
         return max_temperature
 
