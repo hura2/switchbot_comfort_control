@@ -1,5 +1,6 @@
 import datetime
 import logging
+from typing import Tuple
 
 from common.data_types import AirconSetting, PMVCalculation, TemperatureHumidity
 
@@ -57,3 +58,10 @@ class LoggerUtil:
         logger.info(f"現在のサーキュレーターの電源:{current_fan_power}")
         logger.info(f"現在のサーキュレーターの風量:{current_fan_speed}")
         logger.info(f"サーキュレーターの風量を{fan_speed}に設定")
+
+    @staticmethod
+    def log_aircon_scores(scores: Tuple[int, int, int, int]) -> None:
+        logger.info(f"先々週のスコア平均: {scores[0]}")
+        logger.info(f"先週のスコア平均: {scores[1]}")
+        logger.info(f"昨日のスコア: {scores[2]}")
+        logger.info(f"今日のスコア: {scores[3]}")

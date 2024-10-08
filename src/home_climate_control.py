@@ -151,6 +151,7 @@ def main():
 
     # ログ出力
     LoggerUtil.log_circulator_setting(current_fan_power, current_fan_speed, fan_speed)
+    LoggerUtil.log_aircon_scores(analytics.get_aircon_intensity_scores(now))
 
     # 結果を保存
     analytics.insert_temperature_humidity(ceiling, floor, outdoor)
@@ -161,6 +162,8 @@ def main():
     else:
         analytics.insert_aircon_setting(aircon_setting, aircon_last_setting_time)
     analytics.insert_circulator_setting(fan_speed, power)
+    analytics.register_yesterday_intensity_score()
+    # analytics.register_last_month_intensity_scores()
 
     return True
 

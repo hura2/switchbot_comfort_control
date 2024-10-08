@@ -3,6 +3,7 @@ import datetime
 from api.jma_forecast import WeatherData
 from common.data_types import AirconSetting, TemperatureHumidity
 import common.constants as constants
+from util.aircon_intensity_calculator import AirconIntensityCalculator
 from util.supabase_client import SupabaseClient
 from util.time import TimeUtil
 
@@ -292,3 +293,181 @@ def get_or_insert_max_temperature() -> float:
 
     # 取得できた場合は、その値を返す
     return result[1]  # 最高気温の値を返す
+
+# 指定した日付のエアコン設定の強度を取得
+def get_daily_aircon_intensity(date: str) -> int:
+    """
+    指定した日付のエアコン設定の強度を計算します。
+
+    Args:
+        date (str): YYYY-MM-DD形式の日付。
+
+    Returns:
+        Tuple[str, int]: 日付とその日の強度スコアのタプル。
+    """
+    data = (
+        SupabaseClient.get_supabase()
+        .table("aircon_settings")
+        .select("*")
+        .filter("created_at", "gte", f"{date} 00:00:00")
+        .filter("created_at", "lt", f"{date} 23:59:59")
+        .execute()
+    )
+
+    total_intensity = 0
+
+    for setting in data.data:
+        aircon_setting = AirconSetting(
+            temp_setting=str(setting["temperature"]),
+            mode_setting=constants.AirconMode.get_by_id(setting["mode"]),  # Enumを使用
+            fan_speed_setting=constants.AirconFanSpeed.get_by_id(str(setting["fan_speed"])),  # Enumを使用
+            power_setting=constants.AirconPower.get_by_id(setting["power"]),  # Enumを使用
+        )
+        total_intensity += AirconIntensityCalculator.calculate_intensity(
+            temperature=float(aircon_setting.temp_setting),
+            mode=aircon_setting.mode_setting.id,
+            fan_speed=aircon_setting.fan_speed_setting.id,
+            power=aircon_setting.power_setting.id
+        )
+
+    return total_intensity
+
+
+def _save_intensity_score(date: str, score: int) -> None:
+    """
+    指定した日付とスコアをDBに保存します。
+
+    Args:
+        date (str): YYYY-MM-DD形式の日付。
+        score (int): エアコン設定の強度スコア。
+    """
+    SupabaseClient.get_supabase() \
+        .table("aircon_intensity_scores") \
+        .insert({"record_date": date, "intensity_score": score}) \
+        .execute()
+    
+
+
+def register_yesterday_intensity_score() -> None:
+    """
+    昨日のエアコン強度スコアを計算し、DBに保存します。
+    """
+    yesterday = (TimeUtil.get_current_time() - datetime.timedelta(days=1)).date()
+    date_str = yesterday.strftime("%Y-%m-%d")
+    
+    # 昨日のスコアをDBで確認
+    existing_score = (
+        SupabaseClient.get_supabase()
+        .table("aircon_intensity_scores")
+        .select("*")
+        .filter("record_date", "eq", date_str)
+        .execute()
+    )
+    
+    # スコアが既に登録されている場合、計算をスキップ
+    if existing_score.data:
+        print(f"{date_str} のスコアは既に登録されています。")
+        return
+    
+    # 昨日のスコアを取得
+    intensity_score = get_daily_aircon_intensity(date_str)
+    
+    # スコアをDBに保存
+    _save_intensity_score(date_str, intensity_score)
+
+
+    # エアコンの強度スコアを取得する関数
+def get_aircon_intensity_scores(today: datetime.date) -> Tuple[int, int, int, int]:
+    """
+    先々週、先週、昨日、今日のエアコンの強度スコアを取得します。
+
+    Args:
+        today (datetime.date): 今日の日付。
+
+    Returns:
+        Tuple[int, int, int, int]: 先々週、先週、昨日、今日のスコア。
+    """
+
+    # 今日の日付を基に他の日付を計算
+    yesterday = today - datetime.timedelta(days=1)
+    last_week = today - datetime.timedelta(weeks=1)
+    two_weeks_ago = today - datetime.timedelta(weeks=2)
+
+    # スコアを格納するための変数
+    last_two_weeks_score = 0
+    last_week_score = 0
+    yesterday_score = 0
+
+    # 先々週のスコアをDBから取得
+    two_weeks_ago_score = (
+        SupabaseClient.get_supabase()
+        .table("aircon_intensity_scores")
+        .select("intensity_score")
+        .filter("record_date", "eq", str(two_weeks_ago))
+        .execute()
+    )
+
+    if two_weeks_ago_score.data:
+        last_two_weeks_score = two_weeks_ago_score.data[0]["intensity_score"]
+
+    # 先週のスコアをDBから取得
+    last_week_data = (
+        SupabaseClient.get_supabase()
+        .table("aircon_intensity_scores")
+        .select("intensity_score")
+        .filter("record_date", "eq", str(last_week))
+        .execute()
+    )
+
+    if last_week_data.data:
+        last_week_score = last_week_data.data[0]["intensity_score"]
+
+    # 昨日のスコアをDBから取得
+    yesterday_data = (
+        SupabaseClient.get_supabase()
+        .table("aircon_intensity_scores")
+        .select("intensity_score")
+        .filter("record_date", "eq", str(yesterday))
+        .execute()
+    )
+
+    if yesterday_data.data:
+        yesterday_score = yesterday_data.data[0]["intensity_score"]
+
+    # 今日のスコアを計算
+    today_score = get_daily_aircon_intensity(today.strftime("%Y-%m-%d"))
+
+    return last_two_weeks_score, last_week_score, yesterday_score, today_score
+
+
+def register_last_month_intensity_scores() -> None:
+    """
+    過去1ヶ月の各日付のエアコン強度スコアを計算し、DBに保存します。
+    """
+    current_date = TimeUtil.get_current_time().date()
+    start_date = current_date - datetime.timedelta(days=30)
+
+    for i in range(30):
+        target_date = start_date + datetime.timedelta(days=i)
+        date_str = target_date.strftime("%Y-%m-%d")
+
+        # 指定日付のスコアをDBで確認
+        existing_score = (
+            SupabaseClient.get_supabase()
+            .table("aircon_intensity_scores")
+            .select("*")
+            .filter("record_date", "eq", date_str)
+            .execute()
+        )
+
+        # スコアが既に登録されている場合、計算をスキップ
+        if existing_score.data:
+            print(f"{date_str} のスコアは既に登録されています。")
+            continue
+
+        # aircon_settingsから指定日付のデータを取得
+        intensity_score = get_daily_aircon_intensity(date_str)
+
+        # スコアをDBに保存
+        _save_intensity_score(date_str, intensity_score)
+        print(f"{date_str} のスコア {intensity_score} を登録しました。")
