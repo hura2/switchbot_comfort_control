@@ -296,13 +296,15 @@ def get_or_insert_max_temperature() -> float:
     # 取得できた場合は、その値を返す
     return result[1]  # 最高気温の値を返す
 
+
 # 指定した日付のエアコン設定の強度を取得
-def get_daily_aircon_intensity(date: str) -> int:
+def get_daily_aircon_intensity(date: str, calculate_last_duration: bool = True) -> int:
     """
     指定した日付のエアコン設定の強度を計算します。
 
     Args:
         date (str): YYYY-MM-DD形式の日付。
+        calculate_last_duration (bool): 最後の設定の持続時間を計算するかどうか。
 
     Returns:
         int: 指定日付の強度スコア。
@@ -319,9 +321,6 @@ def get_daily_aircon_intensity(date: str) -> int:
     intensity_by_mode = defaultdict(float)  # 各モードの強度スコアを格納
     last_setting = None
 
-    # 最初の設定の持続時間を計算するためのフラグ
-    first_setting_time = None
-
     # タイムゾーンの定義（日本時間の例）
     JST = TimeUtil.timezone()
 
@@ -332,14 +331,10 @@ def get_daily_aircon_intensity(date: str) -> int:
             fan_speed_setting=constants.AirconFanSpeed.get_by_id(str(setting["fan_speed"])),
             power_setting=constants.AirconPower.get_by_id(setting["power"]),
         )
-        
-        created_at_str = setting["created_at"]
-        created_at_str = created_at_str.split('.')[0] + created_at_str[-6:]  # 秒以下の部分を切り捨て
-        current_time = datetime.datetime.fromisoformat(created_at_str)
 
-        # 最初の設定の場合、持続時間を計算
-        if first_setting_time is None:
-            first_setting_time = current_time
+        created_at_str = setting["created_at"]
+        created_at_str = created_at_str.split(".")[0] + created_at_str[-6:]  # 秒以下の部分を切り捨て
+        current_time = datetime.datetime.fromisoformat(created_at_str)
 
         if last_setting is not None:
             # 前の設定の持続時間を計算
@@ -361,20 +356,8 @@ def get_daily_aircon_intensity(date: str) -> int:
             "power": aircon_setting.power_setting.id,
         }
 
-    # 最初の設定の持続時間を計算
-    if first_setting_time is not None:
-        start_of_day = datetime.datetime.strptime(f"{date} 00:00:00", "%Y-%m-%d %H:%M:%S").replace(tzinfo=JST)
-        time_difference = (first_setting_time - start_of_day).total_seconds()
-        intensity_score = AirconIntensityCalculator.calculate_intensity(
-            temperature=float(last_setting["temperature"]),
-            mode=last_setting["mode"],
-            fan_speed=last_setting["fan_speed"],
-            power=last_setting["power"],
-        )
-        intensity_by_mode[last_setting["mode"]] += intensity_score * time_difference
-
-    # 最後の設定の持続時間を計算
-    if last_setting is not None:
+    # 最後の設定の持続時間を計算するかどうか
+    if calculate_last_duration and last_setting is not None:
         end_of_day = datetime.datetime.strptime(f"{date} 23:59:59", "%Y-%m-%d %H:%M:%S").replace(tzinfo=JST)
         time_difference = (end_of_day - last_setting["created_at"]).total_seconds()
         intensity_score = AirconIntensityCalculator.calculate_intensity(
@@ -389,6 +372,7 @@ def get_daily_aircon_intensity(date: str) -> int:
     total_intensity = sum(intensity_by_mode.values())
 
     return total_intensity
+
 
 def _save_intensity_score(date: str, score: int) -> None:
     """
@@ -433,67 +417,65 @@ def register_yesterday_intensity_score() -> None:
     # エアコンの強度スコアを取得する関数
 
 
-def get_aircon_intensity_scores(today: datetime.date) -> Tuple[int, int, int, int]:
+def get_aircon_intensity_scores(today: datetime.date) -> Tuple[int, int, int, int, int]:
     """
-    先々週、先週、昨日、今日のエアコンの強度スコアを取得します。
+    先々週、先週、今週、昨日、今日のエアコンの強度スコアを取得します。
 
     Args:
         today (datetime.date): 今日の日付。
 
     Returns:
-        Tuple[int, int, int, int]: 先々週、先週、昨日、今日のスコア。
+        Tuple[int, int, int, int, int]: 先々週、先週、今週、昨日、今日のスコア。
     """
+    
+    def calculate_average_score(start_date, end_date):
+        # スコア計算処理
+        data = (
+            SupabaseClient.get_supabase()
+            .table("aircon_intensity_scores")
+            .select("intensity_score")
+            .filter("record_date", "gte", str(start_date))
+            .filter("record_date", "lt", str(end_date))
+            .execute()
+        )
+        
+        total_score = sum(item["intensity_score"] for item in data.data)
+        count = len(data.data)
 
-    # 今日の日付を基に他の日付を計算
+        # 平均スコアを小数点以下切り捨てで計算
+        if count > 0:
+            return int(total_score // count)  # 小数点以下切り捨て
+        return 0
+
+    # 日付の計算
     yesterday = today - datetime.timedelta(days=1)
-    last_week = today - datetime.timedelta(weeks=1)
-    two_weeks_ago = today - datetime.timedelta(weeks=2)
+    last_week_start = today - datetime.timedelta(weeks=1, days=today.weekday())
+    last_week_end = last_week_start + datetime.timedelta(days=7)
+    two_weeks_ago_start = last_week_start - datetime.timedelta(days=7)
+    two_weeks_ago_end = last_week_start
+    this_week_start = today - datetime.timedelta(days=today.weekday())
+    this_week_end = today + datetime.timedelta(days=1)
 
-    # スコアを格納するための変数
-    last_two_weeks_score = 0
-    last_week_score = 0
-    yesterday_score = 0
-
-    # 先々週のスコアをDBから取得
-    two_weeks_ago_score = (
-        SupabaseClient.get_supabase()
-        .table("aircon_intensity_scores")
-        .select("intensity_score")
-        .filter("record_date", "eq", str(two_weeks_ago))
-        .execute()
-    )
-
-    if two_weeks_ago_score.data:
-        last_two_weeks_score = two_weeks_ago_score.data[0]["intensity_score"]
-
-    # 先週のスコアをDBから取得
-    last_week_data = (
-        SupabaseClient.get_supabase()
-        .table("aircon_intensity_scores")
-        .select("intensity_score")
-        .filter("record_date", "eq", str(last_week))
-        .execute()
-    )
-
-    if last_week_data.data:
-        last_week_score = last_week_data.data[0]["intensity_score"]
+    # スコアの計算
+    last_two_weeks_score = calculate_average_score(two_weeks_ago_start, two_weeks_ago_end)
+    last_week_score = calculate_average_score(last_week_start, last_week_end)
+    this_week_score = calculate_average_score(this_week_start, this_week_end)
 
     # 昨日のスコアをDBから取得
-    yesterday_data = (
+    yesterday_score_data = (
         SupabaseClient.get_supabase()
         .table("aircon_intensity_scores")
         .select("intensity_score")
         .filter("record_date", "eq", str(yesterday))
         .execute()
     )
-
-    if yesterday_data.data:
-        yesterday_score = yesterday_data.data[0]["intensity_score"]
+    yesterday_score = int(yesterday_score_data.data[0]["intensity_score"]) if yesterday_score_data.data else 0
 
     # 今日のスコアを計算
-    today_score = get_daily_aircon_intensity(today.strftime("%Y-%m-%d"))
+    today_score = int(get_daily_aircon_intensity(today.strftime("%Y-%m-%d"), False))
 
-    return last_two_weeks_score, last_week_score, yesterday_score, today_score
+    return last_two_weeks_score, last_week_score, this_week_score, yesterday_score, today_score
+
 
 
 def register_last_month_intensity_scores() -> None:

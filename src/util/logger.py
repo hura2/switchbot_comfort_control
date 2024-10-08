@@ -63,5 +63,6 @@ class LoggerUtil:
     def log_aircon_scores(scores: Tuple[int, int, int, int]) -> None:
         logger.info(f"先々週のスコア平均: {scores[0]}")
         logger.info(f"先週のスコア平均: {scores[1]}")
-        logger.info(f"昨日のスコア: {scores[2]}")
-        logger.info(f"今日のスコア: {scores[3]}")
+        logger.info(f"今週のスコア平均: {scores[2]}")
+        logger.info(f"昨日のスコア: {scores[3]}")
+        logger.info(f"今日のスコア予想: {scores[4]}")
