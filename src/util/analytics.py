@@ -6,6 +6,7 @@ import common.constants as constants
 from util.aircon_intensity_calculator import AirconIntensityCalculator
 from util.supabase_client import SupabaseClient
 from util.time import TimeUtil
+from collections import defaultdict
 
 
 # 温度情報をデータベースに挿入
@@ -272,6 +273,7 @@ def get_max_temperature_by_date(recorded_date: str) -> Optional[Tuple[str, float
         return data.data[0]["recorded_date"], data.data[0]["max_temperature"]
     return None
 
+
 def get_or_insert_max_temperature() -> float:
     """
     現在の日付の最高気温を取得し、存在しない場合は新たに挿入します。
@@ -281,7 +283,7 @@ def get_or_insert_max_temperature() -> float:
     """
     # 現在の日付を取得
     recorded_date = TimeUtil.get_current_time().date().isoformat()
-    
+
     # 現在の日付の最高気温を取得
     result = get_max_temperature_by_date(recorded_date)
 
@@ -303,7 +305,7 @@ def get_daily_aircon_intensity(date: str) -> int:
         date (str): YYYY-MM-DD形式の日付。
 
     Returns:
-        Tuple[str, int]: 日付とその日の強度スコアのタプル。
+        int: 指定日付の強度スコア。
     """
     data = (
         SupabaseClient.get_supabase()
@@ -314,24 +316,79 @@ def get_daily_aircon_intensity(date: str) -> int:
         .execute()
     )
 
-    total_intensity = 0
+    intensity_by_mode = defaultdict(float)  # 各モードの強度スコアを格納
+    last_setting = None
+
+    # 最初の設定の持続時間を計算するためのフラグ
+    first_setting_time = None
+
+    # タイムゾーンの定義（日本時間の例）
+    JST = TimeUtil.timezone()
 
     for setting in data.data:
         aircon_setting = AirconSetting(
             temp_setting=str(setting["temperature"]),
-            mode_setting=constants.AirconMode.get_by_id(setting["mode"]),  # Enumを使用
-            fan_speed_setting=constants.AirconFanSpeed.get_by_id(str(setting["fan_speed"])),  # Enumを使用
-            power_setting=constants.AirconPower.get_by_id(setting["power"]),  # Enumを使用
+            mode_setting=constants.AirconMode.get_by_id(setting["mode"]),
+            fan_speed_setting=constants.AirconFanSpeed.get_by_id(str(setting["fan_speed"])),
+            power_setting=constants.AirconPower.get_by_id(setting["power"]),
         )
-        total_intensity += AirconIntensityCalculator.calculate_intensity(
-            temperature=float(aircon_setting.temp_setting),
-            mode=aircon_setting.mode_setting.id,
-            fan_speed=aircon_setting.fan_speed_setting.id,
-            power=aircon_setting.power_setting.id
+        
+        created_at_str = setting["created_at"]
+        created_at_str = created_at_str.split('.')[0] + created_at_str[-6:]  # 秒以下の部分を切り捨て
+        current_time = datetime.datetime.fromisoformat(created_at_str)
+
+        # 最初の設定の場合、持続時間を計算
+        if first_setting_time is None:
+            first_setting_time = current_time
+
+        if last_setting is not None:
+            # 前の設定の持続時間を計算
+            time_difference = (current_time - last_setting["created_at"]).total_seconds()
+            intensity_score = AirconIntensityCalculator.calculate_intensity(
+                temperature=float(last_setting["temperature"]),
+                mode=last_setting["mode"],
+                fan_speed=last_setting["fan_speed"],
+                power=last_setting["power"],
+            )
+            intensity_by_mode[last_setting["mode"]] += intensity_score * time_difference
+
+        # 新しい設定を記録
+        last_setting = {
+            "mode": aircon_setting.mode_setting.id,
+            "created_at": current_time,
+            "temperature": aircon_setting.temp_setting,
+            "fan_speed": aircon_setting.fan_speed_setting.id,
+            "power": aircon_setting.power_setting.id,
+        }
+
+    # 最初の設定の持続時間を計算
+    if first_setting_time is not None:
+        start_of_day = datetime.datetime.strptime(f"{date} 00:00:00", "%Y-%m-%d %H:%M:%S").replace(tzinfo=JST)
+        time_difference = (first_setting_time - start_of_day).total_seconds()
+        intensity_score = AirconIntensityCalculator.calculate_intensity(
+            temperature=float(last_setting["temperature"]),
+            mode=last_setting["mode"],
+            fan_speed=last_setting["fan_speed"],
+            power=last_setting["power"],
         )
+        intensity_by_mode[last_setting["mode"]] += intensity_score * time_difference
+
+    # 最後の設定の持続時間を計算
+    if last_setting is not None:
+        end_of_day = datetime.datetime.strptime(f"{date} 23:59:59", "%Y-%m-%d %H:%M:%S").replace(tzinfo=JST)
+        time_difference = (end_of_day - last_setting["created_at"]).total_seconds()
+        intensity_score = AirconIntensityCalculator.calculate_intensity(
+            temperature=float(last_setting["temperature"]),
+            mode=last_setting["mode"],
+            fan_speed=last_setting["fan_speed"],
+            power=last_setting["power"],
+        )
+        intensity_by_mode[last_setting["mode"]] += intensity_score * time_difference
+
+    # 全てのモードの強度スコアを合計
+    total_intensity = sum(intensity_by_mode.values())
 
     return total_intensity
-
 
 def _save_intensity_score(date: str, score: int) -> None:
     """
@@ -341,11 +398,9 @@ def _save_intensity_score(date: str, score: int) -> None:
         date (str): YYYY-MM-DD形式の日付。
         score (int): エアコン設定の強度スコア。
     """
-    SupabaseClient.get_supabase() \
-        .table("aircon_intensity_scores") \
-        .insert({"record_date": date, "intensity_score": score}) \
-        .execute()
-    
+    SupabaseClient.get_supabase().table("aircon_intensity_scores").insert(
+        {"record_date": date, "intensity_score": score}
+    ).execute()
 
 
 def register_yesterday_intensity_score() -> None:
@@ -354,7 +409,7 @@ def register_yesterday_intensity_score() -> None:
     """
     yesterday = (TimeUtil.get_current_time() - datetime.timedelta(days=1)).date()
     date_str = yesterday.strftime("%Y-%m-%d")
-    
+
     # 昨日のスコアをDBで確認
     existing_score = (
         SupabaseClient.get_supabase()
@@ -363,20 +418,21 @@ def register_yesterday_intensity_score() -> None:
         .filter("record_date", "eq", date_str)
         .execute()
     )
-    
+
     # スコアが既に登録されている場合、計算をスキップ
     if existing_score.data:
         print(f"{date_str} のスコアは既に登録されています。")
         return
-    
+
     # 昨日のスコアを取得
     intensity_score = get_daily_aircon_intensity(date_str)
-    
+
     # スコアをDBに保存
     _save_intensity_score(date_str, intensity_score)
 
-
     # エアコンの強度スコアを取得する関数
+
+
 def get_aircon_intensity_scores(today: datetime.date) -> Tuple[int, int, int, int]:
     """
     先々週、先週、昨日、今日のエアコンの強度スコアを取得します。

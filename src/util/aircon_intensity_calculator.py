@@ -1,5 +1,5 @@
+import common.constants as constants  # Enum定義があるファイルをインポート
 
-import common.constants as constants # Enum定義があるファイルをインポート
 
 # エアコン強度を計算するクラス
 class AirconIntensityCalculator:
@@ -41,13 +41,15 @@ class AirconIntensityCalculator:
             fan_score = 1
 
         # モードスコア
-        mode_score = 4 if mode in [
-            constants.AirconMode.POWERFUL_COOLING.id, 
-            constants.AirconMode.POWERFUL_HEATING.id
-        ] else 3 if mode in [
-            constants.AirconMode.COOLING.id, 
-            constants.AirconMode.HEATING.id
-        ] else 2 if mode == constants.AirconMode.DRY.id else 1
+        if mode in [constants.AirconMode.POWERFUL_COOLING.id, constants.AirconMode.POWERFUL_HEATING.id]:
+            mode_score = 4
+        elif mode in [constants.AirconMode.COOLING.id, constants.AirconMode.HEATING.id]:
+            mode_score = 3
+        elif mode == constants.AirconMode.DRY.id:
+            mode_score = 2
+        elif mode == constants.AirconMode.FAN.id:
+            mode_score = 0
+        else:
+            mode_score = 0
 
         return temp_score + fan_score + mode_score
-
