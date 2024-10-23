@@ -59,7 +59,7 @@ def main():
     floor = switchbot_api.get_floor_temperature()
     study = switchbot_api.get_study_temperature()
     outdoor = switchbot_api.get_outdoor_temperature()
-
+    bedroom = switchbot_api.get_co2_bedroom_data()
     # 天気予報を取得
     max_temp = analytics.get_or_insert_max_temperature()
 
@@ -154,7 +154,8 @@ def main():
     LoggerUtil.log_aircon_scores(analytics.get_aircon_intensity_scores(now))
 
     # 結果を保存
-    analytics.insert_temperature_humidity(ceiling, floor, outdoor)
+    analytics.insert_temperature_humidity(ceiling, floor, outdoor, study, bedroom.temperature_humidity)
+    analytics.insert_co2_sensor_data(bedroom)
     analytics.insert_surface_temperature(pmv.wall, pmv.ceiling, pmv.floor)
     analytics.insert_pmv(pmv.pmv, pmv.met, pmv.clo, pmv.air)
     if ac_settings_changed:

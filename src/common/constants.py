@@ -175,6 +175,8 @@ class Location(Enum):
     FLOOR = (1, "床")  # 床: 床近くの場所で温度と湿度を計測
     CEILING = (2, "天井")  # 天井: 天井近くの場所で温度と湿度を計測
     OUTDOOR = (3, "外")  # 外: 屋外の場所で温度と湿度を計測
+    STUDY = (4, "書斎")  # 書斎: 書斎の場所で温度と湿度を計測
+    BEDROOM = (5, "寝室")  # 寝室: 寝室の場所で温度と湿度とCO2を計測
 
     def __init__(self, id, description):
         self.id = id

@@ -1,7 +1,7 @@
 from typing import Optional, Tuple
 import datetime
 from api.jma_forecast import WeatherData
-from common.data_types import AirconSetting, TemperatureHumidity
+from common.data_types import AirconSetting, CO2SensorData, TemperatureHumidity
 import common.constants as constants
 from util.aircon_intensity_calculator import AirconIntensityCalculator
 from util.supabase_client import SupabaseClient
@@ -48,6 +48,27 @@ def insert_humidity(location_id: int, humidity: float, created_at: datetime):
         SupabaseClient.get_supabase()
         .from_("humidities")
         .insert([{"location_id": location_id, "humidity": humidity, "created_at": created_at.isoformat()}])
+        .execute()
+    )
+    return result
+
+
+def insert_co2_level(location_id: int, co2: int, created_at: datetime):
+    """
+    CO2濃度情報をデータベースに挿入します。
+
+    Args:
+        location_id (int): CO2濃度情報の位置ID。
+        co2_level (int): CO2濃度情報（ppm）。
+        created_at (datetime): CO2濃度情報の作成日時。
+
+    Returns:
+        APIResponse: 挿入結果の情報が含まれる。
+    """
+    result = (
+        SupabaseClient.get_supabase()
+        .from_("co2_levels")  # CO2濃度を格納するテーブル名
+        .insert([{"location_id": location_id, "co2_level": co2, "created_at": created_at.isoformat()}])
         .execute()
     )
     return result
@@ -163,7 +184,13 @@ def get_latest_aircon_setting() -> Tuple[AirconSetting, datetime.datetime]:
     return aircon_setting, created_at
 
 
-def insert_temperature_humidity(ceiling: TemperatureHumidity, floor: TemperatureHumidity, outdoor: TemperatureHumidity):
+def insert_temperature_humidity(
+    ceiling: TemperatureHumidity,
+    floor: TemperatureHumidity,
+    outdoor: TemperatureHumidity,
+    study: TemperatureHumidity,
+    bedroom: TemperatureHumidity,
+):
     """
     天井、床、外部の温度と湿度データをデータベースに挿入します。
 
@@ -171,14 +198,33 @@ def insert_temperature_humidity(ceiling: TemperatureHumidity, floor: Temperature
         ceiling (TemperatureHumidity): 天井の温度と湿度データ
         floor (TemperatureHumidity): 床の温度と湿度データ
         outdoor (TemperatureHumidity): 外部の温度と湿度データ
+        study (TemperatureHumidity): 書斎の温度と湿度データ
+        bedroom (TemperatureHumidity): 寝室の温度と湿度データ
     """
     now = TimeUtil.get_current_time()
     insert_temperature(constants.Location.FLOOR.id, floor.temperature, now)
     insert_temperature(constants.Location.CEILING.id, ceiling.temperature, now)
     insert_temperature(constants.Location.OUTDOOR.id, outdoor.temperature, now)
+    insert_temperature(constants.Location.STUDY.id, study.temperature, now)
+    insert_temperature(constants.Location.BEDROOM.id, bedroom.temperature, now)
     insert_humidity(constants.Location.FLOOR.id, floor.humidity, now)
     insert_humidity(constants.Location.CEILING.id, ceiling.humidity, now)
     insert_humidity(constants.Location.OUTDOOR.id, outdoor.humidity, now)
+    insert_humidity(constants.Location.STUDY.id, study.humidity, now)
+    insert_humidity(constants.Location.BEDROOM.id, bedroom.humidity, now)
+
+
+def insert_co2_sensor_data(bedroom: CO2SensorData):
+    """
+    CO2センサーのデータをデータベースに挿入します。
+
+    Args:
+        bedroom (CO2SensorData): 寝室のCO2センサーのデータ
+    """
+    now = TimeUtil.get_current_time()
+
+    # CO2濃度を挿入
+    insert_co2_level(constants.Location.BEDROOM.id, bedroom.co2, now)
 
 
 # サーキュレーター設定情報をデータベースに挿入
@@ -427,7 +473,7 @@ def get_aircon_intensity_scores(today: datetime.date) -> Tuple[int, int, int, in
     Returns:
         Tuple[int, int, int, int, int]: 先々週、先週、今週、昨日、今日のスコア。
     """
-    
+
     def calculate_average_score(start_date, end_date):
         # スコア計算処理
         data = (
@@ -438,7 +484,7 @@ def get_aircon_intensity_scores(today: datetime.date) -> Tuple[int, int, int, in
             .filter("record_date", "lt", str(end_date))
             .execute()
         )
-        
+
         total_score = sum(item["intensity_score"] for item in data.data)
         count = len(data.data)
 
@@ -475,7 +521,6 @@ def get_aircon_intensity_scores(today: datetime.date) -> Tuple[int, int, int, in
     today_score = int(get_daily_aircon_intensity(today.strftime("%Y-%m-%d"), False))
 
     return last_two_weeks_score, last_week_score, this_week_score, yesterday_score, today_score
-
 
 
 def register_last_month_intensity_scores() -> None:

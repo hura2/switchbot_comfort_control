@@ -90,3 +90,16 @@ class TemperatureHumidity:
 
     temperature: float
     humidity: float
+
+
+@dataclasses.dataclass
+class CO2SensorData:
+    """
+    CO2センサーのデータを表すデータクラス。
+
+    Attributes:
+        temperature_humidity (TemperatureHumidity): 温度と湿度のデータ。
+        co2 (int): CO2濃度値。
+    """
+    temperature_humidity: TemperatureHumidity
+    co2: int

@@ -7,7 +7,7 @@ import os
 import time
 import requests
 from dotenv import load_dotenv
-from common.data_types import AirconSetting, TemperatureHumidity
+from common.data_types import AirconSetting, CO2SensorData, TemperatureHumidity
 
 # ロギング用のライブラリ
 from util.logger import logger
@@ -25,6 +25,7 @@ CEILING_DEVICE_ID = os.environ["SWITCHBOT_CEILING_DEVICE_ID"]
 FLOOR_DEVICE_ID = os.environ["SWITCHBOT_FLOOR_DEVICE_ID"]
 OUTDOOR_DEVICE_ID = os.environ["SWITCHBOT_OUTDOOR_DEVICE_ID"]
 STUDY_DEVICE_ID = os.environ["SWITCHBOT_STUDY_DEVICE_ID"]
+CO2_BEDROOM_DEVICE_ID = os.environ["SWITCHBOT_CO2_BEDROOM_DEVICE_ID"]
 AIR_CONDITIONER_DEVICE_ID = os.environ["SWITCHBOT_AIR_CONDITIONER_DEVICE_ID"]
 AIR_CONDITIONER_SUPPORT_DEVICE_ID = os.environ["SWITCHBOT_AIR_CONDITIONER_SUPPORT_DEVICE_ID"]
 
@@ -127,6 +128,41 @@ def get_temperature_and_humidity(device_id: str) -> TemperatureHumidity:
     
     # リトライ後も成功しない場合はエラーを発生させる
     raise RuntimeError("Failed to retrieve temperature and humidity after multiple retries.")
+
+def get_co2_sensor_data(device_id: str) -> CO2SensorData:
+    """
+    指定したCO2センサーの温度、湿度、CO2を取得し、CO2SensorDataオブジェクトを返します。
+
+    Args:
+        device_id (str): デバイスID
+
+    Returns:
+        CO2SensorData: 温度、湿度、CO2を格納したCO2SensorDataオブジェクト
+    """
+    retry_count = 3  # リトライの試行回数
+    retry_delay = 5  # リトライ間の遅延（秒）
+
+    url = f"{API_BASE_URL}/v1.1/devices/{device_id}/status"
+    for _ in range(retry_count):
+        try:
+            with requests.Session() as session:
+                response = session.get(url, headers=generate_swt_header())
+                response.raise_for_status()
+                data = response.json()
+                temperature = data["body"]["temperature"]
+                humidity = data["body"]["humidity"]
+                co2 = data["body"]["CO2"]
+
+                # TemperatureHumidityのインスタンスを作成
+                temperature_humidity = TemperatureHumidity(temperature=temperature, humidity=humidity)
+                return CO2SensorData(temperature_humidity=temperature_humidity, co2=co2)
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error occurred: {e}")
+            logger.info(f"Retrying in {retry_delay} seconds...")
+            time.sleep(retry_delay)
+    
+    # リトライ後も成功しない場合はエラーを発生させる
+    raise RuntimeError("Failed to retrieve CO2 sensor data after multiple retries.")
 
 
 def post_command(
@@ -258,3 +294,12 @@ def get_study_temperature() -> TemperatureHumidity:
         TemperatureHumidity: 温度と湿度を表すオブジェクト
     """
     return get_temperature_and_humidity(STUDY_DEVICE_ID)
+
+def get_co2_bedroom_data() -> CO2SensorData:
+    """
+    寝室のCO2センサーから温度、湿度、CO2濃度を取得します。
+
+    Returns:
+        CO2SensorData: 温度、湿度、CO2濃度を表すオブジェクト
+    """
+    return get_co2_sensor_data(CO2_BEDROOM_DEVICE_ID)
