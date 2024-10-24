@@ -1,4 +1,5 @@
 import datetime
+import statistics
 from util.aircon import Aircon
 from util.circulator import Circulator
 from util.logger import LoggerUtil
@@ -14,8 +15,8 @@ def calculate_met_icl(outdoor_temperature: float, max_temp: int, bedtime: bool):
     # 現在の曜日を取得
     current_day = now.weekday()  # 0:月曜, 1:火曜, ..., 6:日曜
     ot = outdoor_temperature
-    # 最高気温が25度以上は涼しい服装
-    if max_temp >= 28:
+    # 最高気温が30度以上は涼しい服装
+    if max_temp >= 30:
         met = 1.0 if bedtime else 1.1
         icl = 0.8 if bedtime else 0.6
         # たくさん活動する時間帯はmetを増やす
@@ -70,10 +71,23 @@ def main():
     # 寝る時間かどうかを判断（起動時間内ならばFalse,それ以外はTrue）
     bedtime = bedtime = on_time > now or off_time < now
 
+    # 各部屋の温度と湿度をリスト化
+    temperature_humidity_pairs = [
+        (floor.temperature, ceiling.humidity),
+        (ceiling.temperature, ceiling.humidity),
+        (study.temperature, study.humidity),
+        (bedroom.temperature_humidity.temperature, bedroom.temperature_humidity.humidity)
+    ]
+
     # 絶対湿度を計算
-    absolute_humidity = heat_comfort_calculator.calculate_absolute_humidity(
-        floor.temperature, (ceiling.humidity + floor.humidity) / 2
-    )
+    absolute_humidities = [
+        heat_comfort_calculator.calculate_absolute_humidity(temp, hum) 
+        for temp, hum in temperature_humidity_pairs
+    ]
+
+    # 絶対湿度の平均を計算
+    absolute_humidity = statistics.mean(absolute_humidities)
+    
     # 外部の絶対湿度を計算
     outdoor_absolute_humidity = heat_comfort_calculator.calculate_absolute_humidity(
         outdoor.temperature, outdoor.humidity
@@ -84,7 +98,16 @@ def main():
 
     # ログに各種情報を出力
     LoggerUtil.log_environment_data(
-        ceiling, floor, study, outdoor, bedroom, absolute_humidity, outdoor_absolute_humidity, dew_point, max_temp, TimeUtil.get_current_time()
+        ceiling,
+        floor,
+        study,
+        outdoor,
+        bedroom,
+        absolute_humidity,
+        outdoor_absolute_humidity,
+        dew_point,
+        max_temp,
+        TimeUtil.get_current_time(),
     )
     # METとICLの値を計算
     met, icl = calculate_met_icl(outdoor.temperature, max_temp, bedtime)
