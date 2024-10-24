@@ -19,7 +19,7 @@ class Aircon:
         dew_point: float,
     ):
         # 初期値の設定
-        setting = AirconSetting("", "", constants.AirconFanSpeed.AUTO, constants.AirconPower.ON)
+        setting = AirconSetting("", "", constants.AirconFanSpeed.MEDIUM, constants.AirconPower.ON)
         pmv = pmvCalculation.pmv
         if pmv <= -0.2:
             # pmvが-0.2以下の場合の処理
@@ -35,7 +35,7 @@ class Aircon:
                 # 天気が25℃以上の場合はそのうち暖かくなるので送風
                 setting.temp_setting = "25"
                 setting.mode_setting = constants.AirconMode.FAN
-                setting.fan_speed_setting = constants.AirconFanSpeed.LOW
+                # setting.fan_speed_setting = constants.AirconFanSpeed.LOW
             else:
                 setting.temp_setting = "23"
                 setting.mode_setting = constants.AirconMode.HEATING
@@ -44,12 +44,12 @@ class Aircon:
             # pmvが-0.3から0の場合の処理
             setting.temp_setting = "28"
             setting.mode_setting = constants.AirconMode.FAN
-            setting.fan_speed_setting = constants.AirconFanSpeed.LOW
+            # setting.fan_speed_setting = constants.AirconFanSpeed.LOW
         elif pmv <= 0.10:
             # pmvが0から0.10の場合の処理
             setting.temp_setting = "28"
             setting.mode_setting = constants.AirconMode.FAN
-            setting.fan_speed_setting = constants.AirconFanSpeed.LOW
+            # setting.fan_speed_setting = constants.AirconFanSpeed.LOW
         elif pmv <= 0.15:
             # pmvが0.10から0.15の場合の処理
             setting.temp_setting = "26"
@@ -80,7 +80,7 @@ class Aircon:
                 # 平均放射温度より外気温-5°が低い場合はそのうち涼しくなるので送風
                 setting.temp_setting = "28"
                 setting.mode_setting = constants.AirconMode.FAN
-                setting.fan_speed_setting = constants.AirconFanSpeed.LOW
+                # setting.fan_speed_setting = constants.AirconFanSpeed.LOW
 
         # 暖房設定の場合
         if (
@@ -91,7 +91,7 @@ class Aircon:
                 # 平均放射温度-5°より外気温が高い場合はそのうち暖かくなるので送風
                 setting.temp_setting = "28"
                 setting.mode_setting = constants.AirconMode.FAN
-                setting.fan_speed_setting = constants.AirconFanSpeed.LOW
+                # setting.fan_speed_setting = constants.AirconFanSpeed.LOW
 
         if setting.mode_setting == constants.AirconMode.FAN:
             # 絶対湿度が12.5以上の場合は除湿運転
@@ -178,7 +178,7 @@ class Aircon:
                         aircon_setting.temp_setting = "27"
                         aircon_setting.mode_setting = constants.AirconMode.COOLING
                         #aircon_setting.fan_speed_setting = constants.AirconFanSpeed.HIGH
-                        aircon_setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
+                        # aircon_setting.fan_speed_setting = constants.AirconFanSpeed.AUTO
                         Aircon.update_aircon_settings(aircon_setting)
                         return False
                 # モードが同じ場合でも、温度、ファン速度、電源のいずれかが異なる場合、
