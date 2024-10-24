@@ -74,13 +74,17 @@ def main():
     absolute_humidity = heat_comfort_calculator.calculate_absolute_humidity(
         floor.temperature, (ceiling.humidity + floor.humidity) / 2
     )
+    # 外部の絶対湿度を計算
+    outdoor_absolute_humidity = heat_comfort_calculator.calculate_absolute_humidity(
+        outdoor.temperature, outdoor.humidity
+    )
 
     # 露点温度を計算
     dew_point = heat_comfort_calculator.calculate_dew_point(outdoor.temperature, outdoor.humidity)
 
     # ログに各種情報を出力
     LoggerUtil.log_environment_data(
-        ceiling, floor, study, outdoor, absolute_humidity, dew_point, max_temp, TimeUtil.get_current_time()
+        ceiling, floor, study, outdoor, bedroom, absolute_humidity, outdoor_absolute_humidity, dew_point, max_temp, TimeUtil.get_current_time()
     )
     # METとICLの値を計算
     met, icl = calculate_met_icl(outdoor.temperature, max_temp, bedtime)

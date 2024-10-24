@@ -2,7 +2,7 @@ import datetime
 import logging
 from typing import Tuple
 
-from common.data_types import AirconSetting, PMVCalculation, TemperatureHumidity
+from common.data_types import AirconSetting, CO2SensorData, PMVCalculation, TemperatureHumidity
 
 formatter = "%(message)s"
 logging.basicConfig(level=logging.INFO, format=formatter)
@@ -17,17 +17,22 @@ class LoggerUtil:
         floor: TemperatureHumidity,
         study: TemperatureHumidity,
         outdoor: TemperatureHumidity,
+        bedroom: CO2SensorData,
         absolute_humidity: float,
+        outdoor_absolute_humidity: float,
         dew_point: float,
         max_temp: int,
         now: datetime.datetime,
     ):
+        
         logger.info(f"現在時刻:{now}")
         logger.info(f"最高気温予報:{max_temp}°")
+        logger.info(f"CO2濃度:{bedroom.co2}ppm")
         logger.info(f"天井:温度{ceiling.temperature}°, 湿度{ceiling.humidity}%")
         logger.info(f"床:温度{floor.temperature}°, 湿度{floor.humidity}%")
         logger.info(f"書斎:温度{study.temperature}°, 湿度{study.humidity}%, リビングとの温度差{abs(floor.temperature - study.temperature):.2f}°")
-        logger.info(f"外部:温度{outdoor.temperature}°, 湿度{outdoor.humidity}%, 露点温度{dew_point}°")
+        logger.info(f"寝室１:温度{bedroom.temperature_humidity.temperature}°, 寝室１{bedroom.temperature_humidity.humidity}%, リビングとの温度差{abs(floor.temperature - bedroom.temperature_humidity.temperature):.2f}°")
+        logger.info(f"外部:温度{outdoor.temperature}°, 湿度{outdoor.humidity}%, 絶対湿度{outdoor_absolute_humidity:.2f}g/㎥, 露点温度{dew_point}°")
         logger.info(f"相対湿度{(ceiling.humidity + floor.humidity) / 2}°, 絶対湿度{absolute_humidity:.2f}g/㎥")
 
     @staticmethod
