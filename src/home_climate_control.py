@@ -121,9 +121,9 @@ def main():
         pmv, floor.temperature, study.temperature, outdoor.temperature, absolute_humidity, dew_point
     )
 
-    # 寝る時間の送風はLOWにする
+    # 寝る時間の送風はMEDIUMにする
     if bedtime == True and aircon_setting.mode_setting.id == constants.AirconMode.FAN.id:
-        aircon_setting.fan_speed_setting = constants.AirconFanSpeed.LOW
+        aircon_setting.fan_speed_setting = constants.AirconFanSpeed.MEDIUM
 
     # エアコンの設定を更新
     ac_settings_changed = Aircon.update_aircon_if_necessary(
