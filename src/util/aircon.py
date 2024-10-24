@@ -123,7 +123,10 @@ class Aircon:
                 setting.force_fan_below_dew_point = True
 
             
-
+        #テスト
+        setting.mode_setting=constants.AirconMode.FAN
+        setting.fan_speed_setting=constants.AirconFanSpeed.HIGH
+        
         return setting
 
     # エアコンの設定を更新するかどうかを判断
